@@ -1,4 +1,5 @@
 from django.contrib import admin
-from .models import Post
+from .models import Ticket, Project
 
-admin.site.register(Post)
+admin.site.register(Ticket)
+admin.site.register(Project)

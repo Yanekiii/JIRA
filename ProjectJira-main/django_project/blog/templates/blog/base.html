@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'blog/main.css' %}">
 
     <title>{% if title %}BENYS - {{ title }}{% else %}BENYS - Gestion de Projet Agile{% endif %}</title>
-
+    
     <style>
         /* Un petit ajustement pour le mode Zen : fond très légèrement gris pour faire ressortir les cartes blanches */
         body { background-color: #f8f9fa; padding-top: 80px; }
@@ -20,7 +20,7 @@
     <header>
       <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top border-bottom">
         <div class="container-xl"> <a class="navbar-brand fw-bold text-primary" href="{% url 'blog-home' %}">
-            🧘 BENYS
+              BENYS
           </a>
           
           <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,12 +30,13 @@
           <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav me-auto mb-2 mb-lg-0">
               <a class="nav-link text-dark fw-semibold" href="{% url 'blog-home' %}">Tableau de Bord</a>
-              <a class="nav-link text-dark" href="{% url 'blog-about' %}">Mes Projets</a>
+              <a class="nav-link text-dark" href="{% url 'project-list' %}">Mes Projets</a>
+              <a class="nav-link text-dark" href="{% url 'kanban-board' %}">Kanban</a>
             </div>
             
             <div class="navbar-nav d-flex align-items-center gap-2">
               {% if user.is_authenticated %}
-                <a class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" href="{% url 'post-create' %}">+ Nouveau Projet</a>
+                <a class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" href="{% url 'ticket-create' %}">+ Nouveau Ticket</a>
                 <a class="nav-link text-secondary" href="{% url 'profile' %}">Mon Profil</a>
                 <a class="nav-link text-danger" href="{% url 'logout' %}">Déconnexion</a>
               {% else %}
@@ -60,33 +61,6 @@
           {% endif %}
           
           {% block content %}{% endblock %}
-        </div>
-
-        <div class="col-lg-4">
-          <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top: 100px;">
-            <div class="card-body p-4">
-              <h3 class="h5 fw-bold mb-3 d-flex justify-content-between align-items-center">
-                Sprint Actuel
-                <span class="badge bg-light text-primary border rounded-circle" data-bs-toggle="tooltip" title="Un Sprint est une période courte (souvent 2 semaines) durant laquelle l'équipe s'engage à terminer un nombre défini de tickets.">
-                  ?
-                </span>
-              </h3>
-              
-              <p class="text-muted small mb-3">Voici les informations de votre espace de travail actuel.</p>
-              
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                  Statut <span class="badge bg-success rounded-pill">En cours</span>
-                </li>
-                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                  Tickets terminés <span class="fw-bold">4/12</span>
-                </li>
-                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                  Membres <span class="text-secondary small">4 actifs</span>
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
         
       </div>

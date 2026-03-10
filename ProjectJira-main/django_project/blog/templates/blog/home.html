@@ -1,15 +1,29 @@
 {% extends "blog/base.html" %}
 {% block content %}
-    {% for post in posts %}
+    {% for ticket in tickets %}
         <article class="media content-section">
-          <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
+          <img class="rounded-circle article-img" src="{{ ticket.author.profile.image.url }}">
           <div class="media-body">
             <div class="article-metadata">
-              <a class="mr-2" href="#">{{ post.author }}</a>
-              <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
+              <a class="mr-2" href="#">{{ ticket.author }}</a>
+              <small class="text-muted">{{ ticket.date_created|date:"F d, Y" }}</small>
             </div>
-            <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>
-            <p class="article-content">{{ post.content }}</p>
+
+            <h2>
+              <a class="article-title" href="{% url 'ticket-detail' ticket.id %}">
+                {{ ticket.title }}
+              </a>
+            </h2>
+
+            <p class="article-content">
+              {{ ticket.description }}
+            </p>
+
+            <small>Status : {{ ticket.status }}</small>
+            {% if ticket.project %}
+            <small class="text-muted">Project: {{ ticket.project.name }}</small><br>
+            {% endif %}
+
           </div>
         </article>
     {% endfor %}
