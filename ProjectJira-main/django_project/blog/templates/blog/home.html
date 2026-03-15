@@ -1,119 +1,179 @@
 {% extends "blog/base.html" %}
 {% block content %}
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 px-4">
 
+  <!-- ── Header ── -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
+      <p class="text-uppercase fw-semibold text-primary small mb-1">Dashboard</p>
       <h2 class="fw-bold mb-1">All Tickets</h2>
-      <small class="text-muted">{{ tickets|length }} ticket{{ tickets|length|pluralize }}</small>
+      <small class="text-muted">
+        <i class="bi bi-ticket-perforated me-1"></i>
+        {{ tickets|length }} ticket{{ tickets|length|pluralize }}
+      </small>
     </div>
-
     <a href="{% url 'ticket-create' %}" class="btn btn-primary rounded-pill px-4">
-      New Ticket
+      <i class="bi bi-plus-lg me-1"></i> New Ticket
     </a>
   </div>
 
+  <!-- ── Table ── -->
   <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
     <div class="table-responsive">
-      <table class="table align-middle mb-0">
-        <thead class="bg-white">
+      <table class="table align-middle mb-0 table-hover">
+
+        <thead style="background-color:#f8f9fa;">
           <tr>
-            <th class="px-4 py-3 text-muted small text-uppercase">Type</th>
-            <th class="px-3 py-3 text-muted small text-uppercase">Key</th>
-            <th class="px-3 py-3 text-muted small text-uppercase">Title</th>
-            <th class="px-3 py-3 text-muted small text-uppercase">Priority</th>
-            <th class="px-3 py-3 text-muted small text-uppercase">Status</th>
-            <th class="px-3 py-3 text-muted small text-uppercase">Project</th>
-            <th class="px-3 py-3 text-muted small text-uppercase">Assignee</th>
-            <th class="px-4 py-3 text-muted small text-uppercase text-end">Created</th>
+            <th class="px-4 py-3 text-muted small fw-semibold text-uppercase border-0">Type</th>
+            <th class="px-3 py-3 text-muted small fw-semibold text-uppercase border-0">Key</th>
+            <th class="px-3 py-3 text-muted small fw-semibold text-uppercase border-0">Title</th>
+            <th class="px-3 py-3 text-muted small fw-semibold text-uppercase border-0">Priority</th>
+            <th class="px-3 py-3 text-muted small fw-semibold text-uppercase border-0">Status</th>
+            <th class="px-3 py-3 text-muted small fw-semibold text-uppercase border-0">Project</th>
+            <th class="px-3 py-3 text-muted small fw-semibold text-uppercase border-0">Assignee</th>
+            <th class="px-4 py-3 text-muted small fw-semibold text-uppercase border-0 text-end">Created</th>
           </tr>
         </thead>
 
         <tbody>
           {% for ticket in tickets %}
-          <tr>
+          <tr style="border-bottom:1px solid #f0f0f0;">
+
+            <!-- Type -->
             <td class="px-4 py-3">
               {% if ticket.ticket_type == 'story' %}
-                <span class="badge bg-primary">Story</span>
+                <span class="badge rounded-pill bg-primary px-3">
+                  <i class="bi bi-bookmark-fill me-1"></i>Story
+                </span>
               {% elif ticket.ticket_type == 'bug' %}
-                <span class="badge bg-danger">Bug</span>
+                <span class="badge rounded-pill bg-danger px-3">
+                  <i class="bi bi-bug-fill me-1"></i>Bug
+                </span>
               {% else %}
-                <span class="badge bg-secondary">Task</span>
+                <span class="badge rounded-pill bg-secondary px-3">
+                  <i class="bi bi-check2-square me-1"></i>Task
+                </span>
               {% endif %}
             </td>
 
-            <td class="px-3 py-3 text-muted fw-semibold">
-              {{ ticket.human_id }}
+            <!-- Key -->
+            <td class="px-3 py-3">
+              <code class="text-primary fw-semibold" style="font-size:0.82rem;">{{ ticket.human_id }}</code>
             </td>
 
-            <td class="px-3 py-3">
-              <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold">
+            <!-- Title -->
+            <td class="px-3 py-3" style="max-width:280px;">
+              <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold d-block">
                 {{ ticket.title }}
               </a>
               {% if ticket.description %}
-                <div class="small text-muted mt-1">
-                  {{ ticket.description|truncatewords:12 }}
-                </div>
+                <div class="small text-muted mt-1">{{ ticket.description|truncatewords:10 }}</div>
               {% endif %}
             </td>
 
+            <!-- Priority -->
             <td class="px-3 py-3">
               {% if ticket.priority == 'high' %}
-                <span class="badge bg-warning text-dark">High</span>
+                <span class="d-flex align-items-center gap-1 text-danger fw-semibold small">
+                  <i class="bi bi-arrow-up-circle-fill"></i> High
+                </span>
               {% elif ticket.priority == 'medium' %}
-                <span class="badge bg-info text-dark">Medium</span>
+                <span class="d-flex align-items-center gap-1 text-warning fw-semibold small">
+                  <i class="bi bi-dash-circle-fill"></i> Medium
+                </span>
               {% else %}
-                <span class="badge bg-light text-dark border">Low</span>
+                <span class="d-flex align-items-center gap-1 text-secondary fw-semibold small">
+                  <i class="bi bi-arrow-down-circle-fill"></i> Low
+                </span>
               {% endif %}
             </td>
 
+            <!-- Status -->
             <td class="px-3 py-3">
-              <span class="badge
-                {% if ticket.status == 'new' %}bg-secondary
-                {% elif ticket.status == 'active' %}bg-success
-                {% elif ticket.status == 'closed' %}bg-dark
-                {% else %}bg-danger
-                {% endif %}">
-                {{ ticket.get_status_display }}
+              {% if ticket.status == 'new' %}
+                <span class="badge rounded-pill px-3" style="background:#e9ecef;color:#495057;">
+                  <i class="bi bi-circle me-1"></i>New
+                </span>
+              {% elif ticket.status == 'active' %}
+                <span class="badge rounded-pill bg-success px-3">
+                  <i class="bi bi-play-circle-fill me-1"></i>Active
+                </span>
+              {% elif ticket.status == 'closed' %}
+                <span class="badge rounded-pill bg-dark px-3">
+                  <i class="bi bi-check-circle-fill me-1"></i>Closed
+                </span>
+              {% else %}
+                <span class="badge rounded-pill bg-danger px-3">
+                  <i class="bi bi-x-circle-fill me-1"></i>Cancelled
+                </span>
+              {% endif %}
+            </td>
+
+            <!-- Project -->
+            <td class="px-3 py-3">
+              {% if ticket.project %}
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-light text-dark border" style="font-size:0.72rem;">{{ ticket.project.code }}</span>
+                  <a href="{% url 'project-detail' ticket.project.id %}" class="text-decoration-none text-dark small">
+                    {{ ticket.project.name }}
+                  </a>
+                </div>
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+
+            <!-- Assignee -->
+            <td class="px-3 py-3">
+              {% if ticket.assignee %}
+                <div class="d-flex align-items-center gap-2">
+                  <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold"
+                        style="width:28px;height:28px;font-size:0.7rem;flex-shrink:0;">
+                    {{ ticket.assignee.username|first|upper }}
+                  </span>
+                  <span class="small">{{ ticket.assignee.username }}</span>
+                </div>
+              {% else %}
+                <span class="text-muted small">Unassigned</span>
+              {% endif %}
+            </td>
+
+            <!-- Created -->
+            <td class="px-4 py-3 text-end">
+              <span class="text-muted small">
+                <i class="bi bi-calendar3 me-1"></i>{{ ticket.date_created|date:"M d, Y" }}
               </span>
             </td>
 
-            <td class="px-3 py-3">
-              {% if ticket.project %}
-                <a href="{% url 'project-detail' ticket.project.id %}" class="text-decoration-none">
-                  {{ ticket.project.name }}
-                </a>
-              {% else %}
-                <span class="text-muted">—</span>
-              {% endif %}
-            </td>
-
-            <td class="px-3 py-3">
-              {% if ticket.assignee %}
-                {{ ticket.assignee.username }}
-              {% else %}
-                <span class="text-muted">Unassigned</span>
-              {% endif %}
-            </td>
-
-            <td class="px-4 py-3 text-end text-muted">
-              {{ ticket.date_created|date:"M d, Y" }}
-            </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="8" class="px-4 py-4">
-              <div class="alert alert-light border rounded-3 mb-0">
-                No tickets yet.
-                <a href="{% url 'ticket-create' %}">Create one</a>.
-              </div>
+            <td colspan="8" class="px-4 py-5 text-center">
+              <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+              <h5 class="fw-bold text-muted">No tickets yet</h5>
+              <p class="text-muted small mb-3">Start by creating your first ticket.</p>
+              <a href="{% url 'ticket-create' %}" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-plus-lg me-1"></i> Create Ticket
+              </a>
             </td>
           </tr>
           {% endfor %}
         </tbody>
+
       </table>
     </div>
+
+    {% if tickets %}
+    <div class="px-4 py-3 border-top d-flex justify-content-between align-items-center" style="background:#fafbfc;">
+      <small class="text-muted">Showing {{ tickets|length }} ticket{{ tickets|length|pluralize }}</small>
+      <a href="{% url 'ticket-create' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+        <i class="bi bi-plus-lg me-1"></i> Add Ticket
+      </a>
+    </div>
+    {% endif %}
+
   </div>
 
 </div>
