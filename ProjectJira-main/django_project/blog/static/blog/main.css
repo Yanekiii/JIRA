@@ -1,7 +1,7 @@
 body {
   background: #fafafa;
   color: #333333;
-  margin-top: 5rem;
+  margin-top: 0;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -81,4 +81,35 @@ a.article-title:hover {
 
 .account-heading {
   font-size: 2.5rem;
+}
+
+.project-layout {
+  display: flex;
+  min-height: calc(100vh - 78px);
+}
+
+.project-layout-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #ffffff;
+  border-right: 1px solid #dee2e6;
+  flex-shrink: 0;
+}
+
+.project-layout-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.project-sidebar {
+  min-height: calc(100vh - 78px);
+}
+
+.project-sidebar .nav-link {
+  display: block;
+  transition: background-color 0.2s ease;
+}
+
+.project-sidebar .nav-link:hover {
+  background-color: #f1f3f5;
 }
