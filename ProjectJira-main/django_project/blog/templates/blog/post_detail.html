@@ -36,17 +36,48 @@
         </div>
 
         <div class="card-body p-4">
+
+          <!-- Title + Description -->
           <div class="mb-4">
             <h2 class="fw-bold mb-2">{{ object.title }}</h2>
             <p class="text-muted mb-0">
-              {% if object.description %}
-                {{ object.description }}
-              {% else %}
-                No description provided.
-              {% endif %}
+              {% if object.description %}{{ object.description }}{% else %}No description provided.{% endif %}
             </p>
           </div>
 
+          <!-- Parent ticket (if Task) -->
+          {% if object.ticket_type == 'task' and object.parent_ticket %}
+            <div class="alert alert-light border rounded-3 mb-4 py-2">
+              <small class="text-muted">Parent User Story:</small>
+              <a href="{% url 'ticket-detail' object.parent_ticket.id %}" class="ms-2 fw-semibold text-decoration-none">
+                {{ object.parent_ticket.human_id }} — {{ object.parent_ticket.title }}
+              </a>
+            </div>
+          {% endif %}
+
+          <!-- Sub-tasks (if Story) -->
+          {% if object.ticket_type == 'story' and object.subtasks.exists %}
+            <div class="mb-4">
+              <h6 class="fw-bold text-muted mb-2">Linked Tasks</h6>
+              {% for task in object.subtasks.all %}
+                <div class="d-flex align-items-center gap-2 border-bottom py-2">
+                  <span class="badge bg-secondary">Task</span>
+                  <a href="{% url 'ticket-detail' task.id %}" class="text-decoration-none text-dark">
+                    {{ task.human_id }} — {{ task.title }}
+                  </a>
+                  <span class="badge ms-auto
+                    {% if task.status == 'new' %}bg-secondary
+                    {% elif task.status == 'active' %}bg-success
+                    {% elif task.status == 'closed' %}bg-dark
+                    {% else %}bg-danger{% endif %}">
+                    {{ task.get_status_display }}
+                  </span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <!-- Metadata -->
           <div class="row g-3">
 
             <div class="col-md-4">
@@ -64,9 +95,7 @@
                     <a href="{% url 'project-detail' object.project.id %}" class="text-decoration-none">
                       {{ object.project.name }}
                     </a>
-                  {% else %}
-                    —
-                  {% endif %}
+                  {% else %}—{% endif %}
                 </strong>
               </div>
             </div>
@@ -87,6 +116,13 @@
 
             <div class="col-md-4">
               <div class="border rounded-4 p-3 h-100 bg-white">
+                <small class="text-muted d-block mb-1">Requester</small>
+                <strong>{% if object.demandeur %}{{ object.demandeur.username }}{% else %}<span class="text-muted">—</span>{% endif %}</strong>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100 bg-white">
                 <small class="text-muted d-block mb-1">Assignee</small>
                 <strong>{% if object.assignee %}{{ object.assignee.username }}{% else %}Unassigned{% endif %}</strong>
               </div>
@@ -99,25 +135,41 @@
               </div>
             </div>
 
+            {% if object.start_date %}
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100 bg-white">
+                <small class="text-muted d-block mb-1">Start Date</small>
+                <strong>{{ object.start_date|date:"M d, Y" }}</strong>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if object.end_date %}
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100 bg-white">
+                <small class="text-muted d-block mb-1">End Date</small>
+                <strong>{{ object.end_date|date:"M d, Y" }}</strong>
+              </div>
+            </div>
+            {% endif %}
+
             {% if object.workload_initial %}
               <div class="col-md-4">
                 <div class="border rounded-4 p-3 h-100 bg-white">
-                  <small class="text-muted d-block mb-1">Initial workload</small>
-                  <strong>{{ object.workload_initial }}</strong>
+                  <small class="text-muted d-block mb-1">Initial Workload</small>
+                  <strong>{{ object.workload_initial }} {{ object.project.get_workload_unit_display }}</strong>
                 </div>
               </div>
-
               <div class="col-md-4">
                 <div class="border rounded-4 p-3 h-100 bg-white">
                   <small class="text-muted d-block mb-1">Remaining</small>
-                  <strong>{{ object.workload_remaining }}</strong>
+                  <strong>{{ object.workload_remaining|default:"—" }} {{ object.project.get_workload_unit_display }}</strong>
                 </div>
               </div>
-
               <div class="col-md-4">
                 <div class="border rounded-4 p-3 h-100 bg-white">
                   <small class="text-muted d-block mb-1">Done</small>
-                  <strong>{{ object.workload_done }}</strong>
+                  <strong>{{ object.workload_done }} {{ object.project.get_workload_unit_display }}</strong>
                 </div>
               </div>
             {% endif %}

@@ -1,102 +1,149 @@
 {% extends "blog/base.html" %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <div>
-    <h2 class="fw-bold mb-0">{{ sprint.name }}</h2>
-    <small class="text-muted">{{ sprint.project.name }} | {{ sprint.start_date }} → {{ sprint.end_date }}</small>
-  </div>
-  <a href="{% url 'project-detail' sprint.project.id %}" class="btn btn-outline-secondary btn-sm rounded-pill">← Back to Project</a>
-</div>
 
-<div class="row g-3" id="kanban-board">
-  {% for col_status, col_label, col_color in columns %}
-  <div class="col-md-3">
-    <div class="card border-0 shadow-sm rounded-3 h-100">
-      <div class="card-header text-white fw-semibold rounded-top-3" style="background-color:{{ col_color }};">
-        {{ col_label }}
-      </div>
-      <div class="card-body p-2 kanban-col" data-status="{{ col_status }}" style="min-height:300px;">
-        {% for ticket in col_status|lower == 'new' and new or col_status|lower == 'active' and active or col_status|lower == 'closed' and closed or cancelled %}
-        {% endfor %}
-      </div>
+<div class="container-fluid py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h2 class="fw-bold mb-0">{{ sprint.name }}</h2>
+      <small class="text-muted">
+        {{ sprint.project.name }} &nbsp;|&nbsp; {{ sprint.start_date }} → {{ sprint.end_date }}
+        &nbsp;|&nbsp;
+        <span class="badge {% if sprint.status == 'active' %}bg-success{% elif sprint.status == 'planned' %}bg-secondary{% else %}bg-dark{% endif %}">
+          {{ sprint.get_status_display }}
+        </span>
+      </small>
     </div>
+    <a href="{% url 'project-detail' sprint.project.id %}" class="btn btn-outline-secondary btn-sm rounded-pill">
+      ← Back to Project
+    </a>
   </div>
-  {% endfor %}
-</div>
 
-<!-- Version simple sans boucle complexe -->
-<div class="row g-3">
+  <div class="row g-3" id="kanban-board">
 
-  <div class="col-md-3">
-    <div class="card border-0 shadow-sm rounded-3">
-      <div class="card-header text-white fw-semibold" style="background-color:#6c757d;">New</div>
-      <div class="card-body p-2 kanban-col" data-status="new" style="min-height:300px;">
-        {% for ticket in new %}
-          <div class="card mb-2 border-0 shadow-sm ticket-card" draggable="true" data-id="{{ ticket.id }}">
-            <div class="card-body p-2">
-              <small class="text-muted d-block">{{ ticket.human_id }}
-                {% if ticket.ticket_type == 'bug' %}<span class="badge bg-danger">Bug</span>{% endif %}
-              </small>
-              <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold">{{ ticket.title }}</a>
-              {% if ticket.assignee %}<small class="text-muted d-block"> {{ ticket.assignee.username }}</small>{% endif %}
+    <!-- NEW -->
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 h-100">
+        <div class="card-header text-white fw-semibold rounded-top-3" style="background-color:#6c757d;">
+          New <span class="badge bg-white text-dark ms-1">{{ new|length }}</span>
+        </div>
+        <div class="card-body p-2 kanban-col" data-status="new" style="min-height:350px;">
+          {% for ticket in new %}
+            <div class="card mb-2 border-0 shadow-sm ticket-card" draggable="true" data-id="{{ ticket.id }}">
+              <div class="card-body p-2">
+                <div class="d-flex align-items-center gap-1 mb-1">
+                  <small class="text-muted">{{ ticket.human_id }}</small>
+                  {% if ticket.ticket_type == 'story' %}
+                    <span class="badge bg-primary" style="font-size:0.65rem;">Story</span>
+                  {% elif ticket.ticket_type == 'bug' %}
+                    <span class="badge bg-danger" style="font-size:0.65rem;">Bug</span>
+                  {% else %}
+                    <span class="badge bg-secondary" style="font-size:0.65rem;">Task</span>
+                  {% endif %}
+                </div>
+                <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold d-block">
+                  {{ ticket.title }}
+                </a>
+                {% if ticket.assignee %}
+                  <small class="text-muted">{{ ticket.assignee.username }}</small>
+                {% endif %}
+                {% if ticket.workload_initial %}
+                  <small class="text-muted float-end">{{ ticket.workload_initial }} {{ ticket.project.get_workload_unit_display }}</small>
+                {% endif %}
+              </div>
             </div>
-          </div>
-        {% empty %}<p class="text-muted small text-center mt-3">Empty</p>{% endfor %}
+          {% empty %}
+            <p class="text-muted small text-center mt-3">Empty</p>
+          {% endfor %}
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-md-3">
-    <div class="card border-0 shadow-sm rounded-3">
-      <div class="card-header text-white fw-semibold bg-success">Active</div>
-      <div class="card-body p-2 kanban-col" data-status="active" style="min-height:300px;">
-        {% for ticket in active %}
-          <div class="card mb-2 border-0 shadow-sm ticket-card" draggable="true" data-id="{{ ticket.id }}">
-            <div class="card-body p-2">
-              <small class="text-muted d-block">{{ ticket.human_id }}
-                {% if ticket.ticket_type == 'bug' %}<span class="badge bg-danger">Bug</span>{% endif %}
-              </small>
-              <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold">{{ ticket.title }}</a>
-              {% if ticket.assignee %}<small class="text-muted d-block">👤 {{ ticket.assignee.username }}</small>{% endif %}
+    <!-- ACTIVE -->
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 h-100">
+        <div class="card-header text-white fw-semibold bg-success rounded-top-3">
+          Active <span class="badge bg-white text-dark ms-1">{{ active|length }}</span>
+        </div>
+        <div class="card-body p-2 kanban-col" data-status="active" style="min-height:350px;">
+          {% for ticket in active %}
+            <div class="card mb-2 border-0 shadow-sm ticket-card" draggable="true" data-id="{{ ticket.id }}">
+              <div class="card-body p-2">
+                <div class="d-flex align-items-center gap-1 mb-1">
+                  <small class="text-muted">{{ ticket.human_id }}</small>
+                  {% if ticket.ticket_type == 'story' %}
+                    <span class="badge bg-primary" style="font-size:0.65rem;">Story</span>
+                  {% elif ticket.ticket_type == 'bug' %}
+                    <span class="badge bg-danger" style="font-size:0.65rem;">Bug</span>
+                  {% else %}
+                    <span class="badge bg-secondary" style="font-size:0.65rem;">Task</span>
+                  {% endif %}
+                </div>
+                <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold d-block">
+                  {{ ticket.title }}
+                </a>
+                {% if ticket.assignee %}
+                  <small class="text-muted">{{ ticket.assignee.username }}</small>
+                {% endif %}
+                {% if ticket.workload_initial %}
+                  <small class="text-muted float-end">{{ ticket.workload_initial }} {{ ticket.project.get_workload_unit_display }}</small>
+                {% endif %}
+              </div>
             </div>
-          </div>
-        {% empty %}<p class="text-muted small text-center mt-3">Empty</p>{% endfor %}
+          {% empty %}
+            <p class="text-muted small text-center mt-3">Empty</p>
+          {% endfor %}
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-md-3">
-    <div class="card border-0 shadow-sm rounded-3">
-      <div class="card-header text-white fw-semibold bg-dark">Closed</div>
-      <div class="card-body p-2 kanban-col" data-status="closed" style="min-height:300px;">
-        {% for ticket in closed %}
-          <div class="card mb-2 border-0 shadow-sm ticket-card" draggable="true" data-id="{{ ticket.id }}">
-            <div class="card-body p-2">
-              <small class="text-muted d-block">{{ ticket.human_id }}</small>
-              <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold">{{ ticket.title }}</a>
+    <!-- CLOSED -->
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 h-100">
+        <div class="card-header text-white fw-semibold bg-dark rounded-top-3">
+          Closed <span class="badge bg-white text-dark ms-1">{{ closed|length }}</span>
+        </div>
+        <div class="card-body p-2 kanban-col" data-status="closed" style="min-height:350px;">
+          {% for ticket in closed %}
+            <div class="card mb-2 border-0 shadow-sm ticket-card" draggable="true" data-id="{{ ticket.id }}">
+              <div class="card-body p-2">
+                <small class="text-muted d-block">{{ ticket.human_id }}</small>
+                <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold d-block">
+                  {{ ticket.title }}
+                </a>
+              </div>
             </div>
-          </div>
-        {% empty %}<p class="text-muted small text-center mt-3">Empty</p>{% endfor %}
+          {% empty %}
+            <p class="text-muted small text-center mt-3">Empty</p>
+          {% endfor %}
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-md-3">
-    <div class="card border-0 shadow-sm rounded-3">
-      <div class="card-header text-white fw-semibold bg-danger">Cancelled</div>
-      <div class="card-body p-2 kanban-col" data-status="cancelled" style="min-height:300px;">
-        {% for ticket in cancelled %}
-          <div class="card mb-2 border-0 shadow-sm ticket-card" draggable="true" data-id="{{ ticket.id }}">
-            <div class="card-body p-2">
-              <small class="text-muted d-block">{{ ticket.human_id }}</small>
-              <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold">{{ ticket.title }}</a>
+    <!-- CANCELLED -->
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-3 h-100">
+        <div class="card-header text-white fw-semibold bg-danger rounded-top-3">
+          Cancelled <span class="badge bg-white text-dark ms-1">{{ cancelled|length }}</span>
+        </div>
+        <div class="card-body p-2 kanban-col" data-status="cancelled" style="min-height:350px;">
+          {% for ticket in cancelled %}
+            <div class="card mb-2 border-0 shadow-sm ticket-card" draggable="true" data-id="{{ ticket.id }}">
+              <div class="card-body p-2">
+                <small class="text-muted d-block">{{ ticket.human_id }}</small>
+                <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold d-block">
+                  {{ ticket.title }}
+                </a>
+              </div>
             </div>
-          </div>
-        {% empty %}<p class="text-muted small text-center mt-3">Empty</p>{% endfor %}
+          {% empty %}
+            <p class="text-muted small text-center mt-3">Empty</p>
+          {% endfor %}
+        </div>
       </div>
     </div>
-  </div>
 
+  </div>
 </div>
 
 <script>
@@ -104,23 +151,37 @@ const CSRF = '{{ csrf_token }}';
 let draggedId = null;
 
 document.querySelectorAll('.ticket-card').forEach(card => {
-  card.addEventListener('dragstart', () => { draggedId = card.dataset.id; card.style.opacity = '0.5'; });
-  card.addEventListener('dragend',   () => { card.style.opacity = '1'; });
+  card.addEventListener('dragstart', () => {
+    draggedId = card.dataset.id;
+    card.style.opacity = '0.5';
+  });
+  card.addEventListener('dragend', () => {
+    card.style.opacity = '1';
+  });
 });
 
 document.querySelectorAll('.kanban-col').forEach(col => {
-  col.addEventListener('dragover',  e => { e.preventDefault(); col.style.background = '#e9ecef'; });
-  col.addEventListener('dragleave', () => { col.style.background = ''; });
+  col.addEventListener('dragover', e => {
+    e.preventDefault();
+    col.style.background = '#e9ecef';
+  });
+  col.addEventListener('dragleave', () => {
+    col.style.background = '';
+  });
   col.addEventListener('drop', async () => {
     col.style.background = '';
     const newStatus = col.dataset.status;
     const res = await fetch(`/ticket/${draggedId}/move/`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': CSRF },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': CSRF
+      },
       body: `status=${newStatus}`
     });
     if (res.ok) location.reload();
   });
 });
 </script>
+
 {% endblock %}

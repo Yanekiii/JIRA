@@ -69,6 +69,7 @@ class Sprint(models.Model):
         return reverse('project-detail', kwargs={'pk': self.project.pk})
 
     def save(self, *args, **kwargs):
+        # Only one active sprint per project at a time
         if self.status == 'active':
             Sprint.objects.filter(
                 project=self.project, status='active'
@@ -102,8 +103,8 @@ class Epic(models.Model):
 class Ticket(models.Model):
     TYPE_CHOICES = [
         ('story', 'User Story'),
-        ('bug',   'Bug'),
         ('task',  'Task'),
+        ('bug',   'Bug'),
     ]
     STATUS_CHOICES = [
         ('new',       'New'),
@@ -117,25 +118,59 @@ class Ticket(models.Model):
         ('high',   'High'),
     ]
 
-    project            = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tickets')
-    number             = models.PositiveIntegerField(editable=False, default=0)
-    ticket_type        = models.CharField(max_length=10, choices=TYPE_CHOICES, default='story')
-    epic               = models.ForeignKey(Epic, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets')
-    parent_ticket      = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subtasks')
-    sprint             = models.ForeignKey(Sprint, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets')
-    title              = models.CharField(max_length=200)
-    description        = models.TextField(blank=True)
-    status             = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
-    priority           = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
-    reporter           = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reported_tickets')
-    assignee           = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tickets')
-    start_date         = models.DateField(null=True, blank=True)
-    end_date           = models.DateField(null=True, blank=True)
-    workload_initial   = models.DecimalField(max_digits=6, decimal_places=1, null=True, blank=True)
-    workload_remaining = models.DecimalField(max_digits=6, decimal_places=1, null=True, blank=True)
-    workload_done      = models.DecimalField(max_digits=6, decimal_places=1, default=0)
-    backlog_order      = models.PositiveIntegerField(default=0)
-    date_created       = models.DateTimeField(default=timezone.now)
+    project     = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tickets')
+    number      = models.PositiveIntegerField(editable=False, default=0)
+    ticket_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='story')
+    epic        = models.ForeignKey(Epic, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets')
+
+    # Task → parent User Story
+    parent_ticket = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='subtasks',
+        verbose_name="Parent User Story",
+        limit_choices_to={'ticket_type': 'story'}
+    )
+
+    sprint      = models.ForeignKey(Sprint, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets')
+    title       = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    priority    = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
+
+    # Reporter: auto-filled from request.user in the view
+    reporter = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='reported_tickets',
+        verbose_name="Reporter"
+    )
+
+    # Requester: manually selected in the form
+    demandeur = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='requested_tickets',
+        verbose_name="Requester"
+    )
+
+    assignee = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='assigned_tickets',
+        verbose_name="Assignee"
+    )
+
+    start_date = models.DateField(null=True, blank=True)
+    end_date   = models.DateField(null=True, blank=True)
+
+    # Workload: user types an integer (story points, man-days, or man-hours)
+    workload_initial   = models.PositiveIntegerField(null=True, blank=True, verbose_name="Initial Workload")
+    workload_remaining = models.PositiveIntegerField(null=True, blank=True, verbose_name="Remaining Workload")
+    workload_done      = models.PositiveIntegerField(default=0, verbose_name="Workload Done")
+
+    backlog_order = models.PositiveIntegerField(default=0)
+    date_created  = models.DateTimeField(default=timezone.now)
 
     class Meta:
         unique_together = ('project', 'number')
@@ -144,12 +179,14 @@ class Ticket(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.number = self.project.next_ticket_number()
+            # workload_remaining defaults to workload_initial on creation
             if self.workload_initial and self.workload_remaining is None:
                 self.workload_remaining = self.workload_initial
         super().save(*args, **kwargs)
 
     @property
     def human_id(self):
+        """Returns e.g. PROJ-42"""
         return f"{self.project.code}-{self.number}"
 
     def __str__(self):
