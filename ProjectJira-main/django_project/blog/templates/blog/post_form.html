@@ -1,20 +1,106 @@
 {% extends "blog/base.html" %}
 {% load crispy_forms_tags %}
-
 {% block content %}
-<div class="content-section">
-    <form method="POST">
-        {% csrf_token %}
 
-        <fieldset class="form-group">
-            <legend class="border-bottom mb-4">Create / Edit Project</legend>
-            {{ form|crispy }}
-        </fieldset>
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-9">
 
-        <div class="form-group">
-            <button class="btn btn-outline-info" type="submit">Save Project</button>
-            <a class="btn btn-outline-secondary" href="{% url 'project-list' %}">Cancel</a>
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-primary text-white px-4 py-3">
+          <h3 class="mb-0">
+            {% if form.instance.pk %}
+              Edit Ticket
+            {% else %}
+              Create New Ticket
+            {% endif %}
+          </h3>
         </div>
-    </form>
+
+        <div class="card-body p-4">
+          <form method="POST">
+            {% csrf_token %}
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                {{ form.ticket_type|as_crispy_field }}
+              </div>
+
+              <div class="col-md-6">
+                {{ form.title|as_crispy_field }}
+              </div>
+
+              <div class="col-12">
+                {{ form.description|as_crispy_field }}
+              </div>
+
+              <div class="col-md-4">
+                {{ form.project|as_crispy_field }}
+              </div>
+
+              <div class="col-md-4">
+                {{ form.epic|as_crispy_field }}
+              </div>
+
+              <div class="col-md-4">
+                {{ form.sprint|as_crispy_field }}
+              </div>
+
+              <div class="col-md-4">
+                {{ form.priority|as_crispy_field }}
+              </div>
+
+              <div class="col-md-4">
+                {{ form.status|as_crispy_field }}
+              </div>
+
+              <div class="col-md-4">
+                {{ form.assignee|as_crispy_field }}
+              </div>
+
+              <div class="col-md-4">
+                {{ form.start_date|as_crispy_field }}
+              </div>
+
+              <div class="col-md-4">
+                {{ form.end_date|as_crispy_field }}
+              </div>
+
+              <div class="col-md-4">
+                {{ form.workload_initial|as_crispy_field }}
+              </div>
+
+              {% if form.workload_remaining %}
+                <div class="col-md-6">
+                  {{ form.workload_remaining|as_crispy_field }}
+                </div>
+              {% endif %}
+
+              {% if form.workload_done %}
+                <div class="col-md-6">
+                  {{ form.workload_done|as_crispy_field }}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+              <a href="{% url 'blog-home' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                Cancel
+              </a>
+              <button type="submit" class="btn btn-primary rounded-pill px-4">
+                {% if form.instance.pk %}
+                  Save Changes
+                {% else %}
+                  Create Ticket
+                {% endif %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
-{% endblock content %}
+
+{% endblock %}

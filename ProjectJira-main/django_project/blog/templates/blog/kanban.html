@@ -1,52 +1,23 @@
 {% extends "blog/base.html" %}
-
 {% block content %}
-
-<h2 class="mb-4">Kanban Board</h2>
-
-<div class="row">
-
-<div class="col-md-4">
-<h4>To Do</h4>
-{% for ticket in todo %}
-<div class="card mb-2">
-<div class="card-body">
-<a href="{% url 'ticket-detail' ticket.id %}">
-{{ ticket.title }}
-</a>
+<h2 class="fw-bold mb-4">Global Kanban Board</h2>
+<div class="row g-3">
+  {% for status_key, label, color, items in columns %}
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm rounded-3">
+      <div class="card-header text-white fw-semibold" style="background-color:{{ color }};">
+        {{ label }} <span class="badge bg-white text-dark ms-1">{{ items|length }}</span>
+      </div>
+      <div class="card-body p-2">
+        {% for ticket in items %}
+          <div class="card mb-2 border-0 shadow-sm p-2">
+            <small class="text-muted">{{ ticket.human_id }}</small>
+            <a href="{% url 'ticket-detail' ticket.id %}" class="d-block text-dark fw-semibold text-decoration-none">{{ ticket.title }}</a>
+          </div>
+        {% empty %}<p class="text-muted small text-center mt-2">Empty</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
 </div>
-</div>
-{% endfor %}
-</div>
-
-
-<div class="col-md-4">
-<h4>In Progress</h4>
-{% for ticket in progress %}
-<div class="card mb-2">
-<div class="card-body">
-<a href="{% url 'ticket-detail' ticket.id %}">
-{{ ticket.title }}
-</a>
-</div>
-</div>
-{% endfor %}
-</div>
-
-
-<div class="col-md-4">
-<h4>Done</h4>
-{% for ticket in done %}
-<div class="card mb-2">
-<div class="card-body">
-<a href="{% url 'ticket-detail' ticket.id %}">
-{{ ticket.title }}
-</a>
-</div>
-</div>
-{% endfor %}
-</div>
-
-</div>
-
 {% endblock %}

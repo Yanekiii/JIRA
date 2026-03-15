@@ -1,30 +1,121 @@
 {% extends "blog/base.html" %}
 {% block content %}
-    {% for ticket in tickets %}
-        <article class="media content-section">
-          <img class="rounded-circle article-img" src="{{ ticket.author.profile.image.url }}">
-          <div class="media-body">
-            <div class="article-metadata">
-              <a class="mr-2" href="#">{{ ticket.author }}</a>
-              <small class="text-muted">{{ ticket.date_created|date:"F d, Y" }}</small>
-            </div>
 
-            <h2>
-              <a class="article-title" href="{% url 'ticket-detail' ticket.id %}">
+<div class="container-fluid py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">All Tickets</h2>
+      <small class="text-muted">{{ tickets|length }} ticket{{ tickets|length|pluralize }}</small>
+    </div>
+
+    <a href="{% url 'ticket-create' %}" class="btn btn-primary rounded-pill px-4">
+      New Ticket
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead class="bg-white">
+          <tr>
+            <th class="px-4 py-3 text-muted small text-uppercase">Type</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Key</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Title</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Priority</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Status</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Project</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Assignee</th>
+            <th class="px-4 py-3 text-muted small text-uppercase text-end">Created</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for ticket in tickets %}
+          <tr>
+            <td class="px-4 py-3">
+              {% if ticket.ticket_type == 'story' %}
+                <span class="badge bg-primary">Story</span>
+              {% elif ticket.ticket_type == 'bug' %}
+                <span class="badge bg-danger">Bug</span>
+              {% else %}
+                <span class="badge bg-secondary">Task</span>
+              {% endif %}
+            </td>
+
+            <td class="px-3 py-3 text-muted fw-semibold">
+              {{ ticket.human_id }}
+            </td>
+
+            <td class="px-3 py-3">
+              <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold">
                 {{ ticket.title }}
               </a>
-            </h2>
+              {% if ticket.description %}
+                <div class="small text-muted mt-1">
+                  {{ ticket.description|truncatewords:12 }}
+                </div>
+              {% endif %}
+            </td>
 
-            <p class="article-content">
-              {{ ticket.description }}
-            </p>
+            <td class="px-3 py-3">
+              {% if ticket.priority == 'high' %}
+                <span class="badge bg-warning text-dark">High</span>
+              {% elif ticket.priority == 'medium' %}
+                <span class="badge bg-info text-dark">Medium</span>
+              {% else %}
+                <span class="badge bg-light text-dark border">Low</span>
+              {% endif %}
+            </td>
 
-            <small>Status : {{ ticket.status }}</small>
-            {% if ticket.project %}
-            <small class="text-muted">Project: {{ ticket.project.name }}</small><br>
-            {% endif %}
+            <td class="px-3 py-3">
+              <span class="badge
+                {% if ticket.status == 'new' %}bg-secondary
+                {% elif ticket.status == 'active' %}bg-success
+                {% elif ticket.status == 'closed' %}bg-dark
+                {% else %}bg-danger
+                {% endif %}">
+                {{ ticket.get_status_display }}
+              </span>
+            </td>
 
-          </div>
-        </article>
-    {% endfor %}
-{% endblock content %}
+            <td class="px-3 py-3">
+              {% if ticket.project %}
+                <a href="{% url 'project-detail' ticket.project.id %}" class="text-decoration-none">
+                  {{ ticket.project.name }}
+                </a>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="px-3 py-3">
+              {% if ticket.assignee %}
+                {{ ticket.assignee.username }}
+              {% else %}
+                <span class="text-muted">Unassigned</span>
+              {% endif %}
+            </td>
+
+            <td class="px-4 py-3 text-end text-muted">
+              {{ ticket.date_created|date:"M d, Y" }}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="px-4 py-4">
+              <div class="alert alert-light border rounded-3 mb-0">
+                No tickets yet.
+                <a href="{% url 'ticket-create' %}">Create one</a>.
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
