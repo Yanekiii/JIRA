@@ -95,32 +95,18 @@ def ticket_move(request, pk):
     return JsonResponse({'success': False}, status=400)
 
 
-def ticket_priority_up(request, pk):
-    ticket = get_object_or_404(Ticket, pk=pk)
-    above = Ticket.objects.filter(
-        project=ticket.project,
-        sprint__isnull=True,
-        backlog_order__lt=ticket.backlog_order
-    ).order_by('-backlog_order').first()
-    if above:
-        ticket.backlog_order, above.backlog_order = above.backlog_order, ticket.backlog_order
-        ticket.save()
-        above.save()
-    return redirect('product-backlog', pk=ticket.project.pk)
-
-
-def ticket_priority_down(request, pk):
-    ticket = get_object_or_404(Ticket, pk=pk)
-    below = Ticket.objects.filter(
-        project=ticket.project,
-        sprint__isnull=True,
-        backlog_order__gt=ticket.backlog_order
-    ).order_by('backlog_order').first()
-    if below:
-        ticket.backlog_order, below.backlog_order = below.backlog_order, ticket.backlog_order
-        ticket.save()
-        below.save()
-    return redirect('product-backlog', pk=ticket.project.pk)
+def backlog_reorder(request, project_id):
+    import json
+    from django.views.decorators.http import require_POST
+    project = get_object_or_404(Project, pk=project_id)
+    try:
+        data = json.loads(request.body)
+        ids = data.get('order', [])
+        for position, ticket_id in enumerate(ids):
+            Ticket.objects.filter(id=ticket_id, project=project).update(backlog_order=position)
+        return JsonResponse({'ok': True})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)}, status=400)
 
 
 # ── Projects ──────────────────────────────────────────────────────────────────
