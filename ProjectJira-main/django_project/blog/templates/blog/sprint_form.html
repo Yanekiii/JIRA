@@ -73,6 +73,16 @@
                 </div>
 
                 <div class="col-md-4">
+                  <label class="form-label fw-semibold">Sprint Duration</label>
+                  <div class="border rounded-3 px-3 py-2 bg-light d-flex align-items-center gap-2" style="min-height:38px;">
+                    <span id="duration-icon">📅</span>
+                    <span id="duration-display" class="text-muted">Select start & end dates</span>
+                  </div>
+                  <!-- Champ caché pour envoyer la durée au backend -->
+                  <input type="hidden" name="sprint_duration" id="sprint_duration_hidden">
+                </div>
+
+                <div class="col-md-4">
                   {{ form.global_capacity|as_crispy_field }}
                 </div>
               </div>
@@ -87,5 +97,59 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const display = document.getElementById('duration-display');
+  const hidden  = document.getElementById('sprint_duration_hidden');
+  const icon    = document.getElementById('duration-icon');
+
+  function updateDuration() {
+    const startEl = document.getElementById('id_start_date');
+    const endEl   = document.getElementById('id_end_date');
+    const startVal = startEl ? startEl.value : '';
+    const endVal   = endEl   ? endEl.value   : '';
+
+    if (!startVal || !endVal) {
+      display.textContent = 'Select start & end dates';
+      display.className = 'text-muted';
+      icon.textContent = '📅';
+      if (hidden) hidden.value = '';
+      return;
+    }
+
+    const start = new Date(startVal);
+    const end   = new Date(endVal);
+    const diff  = Math.round((end - start) / (1000 * 60 * 60 * 24));
+
+    if (diff <= 0) {
+      display.textContent = 'End date must be after start date';
+      display.className = 'text-danger fw-semibold';
+      icon.textContent = '⚠️';
+      if (hidden) hidden.value = '';
+    } else {
+      display.textContent = diff + ' day' + (diff > 1 ? 's' : '');
+      display.className = 'text-dark fw-bold';
+      icon.textContent = '⏱️';
+      if (hidden) hidden.value = diff;
+    }
+  }
+
+  const opts = {
+    dateFormat: "Y-m-d",
+    allowInput: true,
+    locale: { firstDayOfWeek: 1 },
+    onChange: updateDuration
+  };
+
+  const startEl = document.getElementById('id_start_date');
+  const endEl   = document.getElementById('id_end_date');
+  if (startEl) flatpickr(startEl, opts);
+  if (endEl)   flatpickr(endEl,   opts);
+
+  // Calcul immédiat si on est en mode édition (dates déjà remplies)
+  updateDuration();
+});
+</script>
 
 {% endblock %}

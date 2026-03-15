@@ -80,8 +80,57 @@
                 </div>
 
                 <div class="col-md-4">
-                  {{ form.color|as_crispy_field }}
+                  <label class="form-label fw-semibold">Color</label>
+                  <div class="d-flex flex-wrap gap-2 mb-2" id="color-swatches">
+                    <div class="color-swatch rounded-circle border border-2" data-color="#e74c3c" style="width:30px;height:30px;background:#e74c3c;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#e74c3c"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#e67e22" style="width:30px;height:30px;background:#e67e22;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#e67e22"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#f1c40f" style="width:30px;height:30px;background:#f1c40f;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#f1c40f"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#2ecc71" style="width:30px;height:30px;background:#2ecc71;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#2ecc71"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#1abc9c" style="width:30px;height:30px;background:#1abc9c;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#1abc9c"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#3498db" style="width:30px;height:30px;background:#3498db;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#3498db"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#9b59b6" style="width:30px;height:30px;background:#9b59b6;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#9b59b6"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#e91e63" style="width:30px;height:30px;background:#e91e63;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#e91e63"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#607d8b" style="width:30px;height:30px;background:#607d8b;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#607d8b"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#795548" style="width:30px;height:30px;background:#795548;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#795548"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#00bcd4" style="width:30px;height:30px;background:#00bcd4;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#00bcd4"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#8bc34a" style="width:30px;height:30px;background:#8bc34a;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#8bc34a"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#ff5722" style="width:30px;height:30px;background:#ff5722;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#ff5722"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#009688" style="width:30px;height:30px;background:#009688;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#009688"></div>
+                    <div class="color-swatch rounded-circle border border-2" data-color="#673ab7" style="width:30px;height:30px;background:#673ab7;cursor:pointer;transition:transform .15s,box-shadow .15s;" title="#673ab7"></div>
+                  </div>
+                  <!-- Champ caché qui envoie la valeur hex au backend -->
+                  {{ form.color }}
+                  <div id="color-preview" class="mt-2 d-flex align-items-center gap-2" style="font-size:.85rem;">
+                    <span class="rounded-circle border" id="preview-dot" style="width:18px;height:18px;display:inline-block;background:#3498db;"></span>
+                    <span id="preview-label" class="text-muted">Selected: <code id="preview-hex">#3498db</code></span>
+                  </div>
                 </div>
+
+                <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                  const swatches = document.querySelectorAll('.color-swatch');
+                  const colorInput = document.querySelector('#id_color');
+                  const dot = document.getElementById('preview-dot');
+                  const hexLabel = document.getElementById('preview-hex');
+
+                  function selectColor(hex) {
+                    if (colorInput) colorInput.value = hex;
+                    if (dot) { dot.style.background = hex; }
+                    if (hexLabel) hexLabel.textContent = hex;
+                    swatches.forEach(s => {
+                      s.style.transform = s.dataset.color === hex ? 'scale(1.25)' : 'scale(1)';
+                      s.style.boxShadow = s.dataset.color === hex ? '0 0 0 3px #fff, 0 0 0 5px ' + hex : '';
+                    });
+                  }
+
+                  // Init avec la valeur actuelle du champ
+                  if (colorInput && colorInput.value) selectColor(colorInput.value);
+
+                  swatches.forEach(s => {
+                    s.addEventListener('click', () => selectColor(s.dataset.color));
+                  });
+                });
+                </script>
               </div>
             </div>
 
