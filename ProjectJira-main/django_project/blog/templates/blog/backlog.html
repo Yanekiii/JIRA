@@ -1,0 +1,138 @@
+{% extends "blog/base.html" %}
+{% block content %}
+
+<div class="container-fluid py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h2 class="fw-bold mb-1">Product Backlog</h2>
+      <small class="text-muted">{{ project.name }} — {{ project.code }}</small>
+    </div>
+
+    <div class="d-flex gap-2">
+      <a href="{% url 'ticket-create' %}" class="btn btn-primary rounded-pill px-4">
+        Add Story/Bug
+      </a>
+      <a href="{% url 'project-detail' project.id %}" class="btn btn-outline-secondary rounded-pill px-4">
+        Back
+      </a>
+    </div>
+  </div>
+
+
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead class="bg-white">
+          <tr>
+            <th class="px-4 py-3 text-muted small text-uppercase">Up</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Down</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Type</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Key</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Title</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Priority</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Estimate</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Assignee</th>
+            <th class="px-3 py-3 text-muted small text-uppercase">Epic</th>
+            <th class="px-4 py-3 text-muted small text-uppercase">Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for ticket in backlog_items %}
+          <tr>
+            <td class="px-4 py-3">
+              <a href="{% url 'ticket-priority-up' ticket.id %}" class="btn btn-light btn-sm border">
+                ↑
+              </a>
+            </td>
+
+            <td class="px-3 py-3">
+              <a href="{% url 'ticket-priority-down' ticket.id %}" class="btn btn-light btn-sm border">
+                ↓
+              </a>
+            </td>
+
+            <td class="px-3 py-3">
+              {% if ticket.ticket_type == 'bug' %}
+                <span class="badge bg-danger">Bug</span>
+              {% else %}
+                <span class="badge bg-primary">Story</span>
+              {% endif %}
+            </td>
+
+            <td class="px-3 py-3 text-muted fw-semibold">
+              {{ ticket.human_id }}
+            </td>
+
+            <td class="px-3 py-3">
+              <a href="{% url 'ticket-detail' ticket.id %}" class="text-decoration-none text-dark fw-semibold">
+                {{ ticket.title }}
+              </a>
+            </td>
+
+            <td class="px-3 py-3">
+              {% if ticket.priority == 'high' %}
+                <span class="badge bg-warning text-dark">High</span>
+              {% elif ticket.priority == 'medium' %}
+                <span class="badge bg-info text-dark">Medium</span>
+              {% else %}
+                <span class="badge bg-light text-dark border">Low</span>
+              {% endif %}
+            </td>
+
+            <td class="px-3 py-3">
+              {% if ticket.workload_initial %}
+                {{ ticket.workload_initial }} {{ project.get_workload_unit_display }}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="px-3 py-3">
+              {% if ticket.assignee %}
+                {{ ticket.assignee.username }}
+              {% else %}
+                <span class="text-muted">Unassigned</span>
+              {% endif %}
+            </td>
+
+            <td class="px-3 py-3">
+              {% if ticket.epic %}
+                <span class="badge" style="background-color: {{ ticket.epic.color }}; color: #fff;">
+                  {{ ticket.epic.title }}
+                </span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <td class="px-4 py-3">
+              <span class="badge
+                {% if ticket.status == 'new' %}bg-secondary
+                {% elif ticket.status == 'active' %}bg-success
+                {% elif ticket.status == 'closed' %}bg-dark
+                {% else %}bg-danger
+                {% endif %}">
+                {{ ticket.get_status_display }}
+              </span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="10" class="px-4 py-4">
+              <div class="alert alert-light border rounded-3 mb-0">
+                The backlog is empty.
+                <a href="{% url 'ticket-create' %}">Add a story or bug</a>.
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

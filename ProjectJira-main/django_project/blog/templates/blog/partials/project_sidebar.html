@@ -1,0 +1,35 @@
+
+<div class="project-sidebar h-100 bg-white border-end px-3 pt-0 pb-4">
+  <div class="mb-4 pb-3 border-bottom pt-3">
+    <h5 class="fw-bold mb-1">{{ project.name }}</h5>
+    <small class="text-muted">{{ project.code }}</small>
+  </div>
+
+  <nav class="nav flex-column gap-1">
+    <a class="nav-link text-dark px-3 py-2 rounded-3" href="{% url 'project-detail' project.id %}">
+      Overview
+    </a>
+
+    <a class="nav-link text-dark px-3 py-2 rounded-3" href="{% url 'product-backlog' project.id %}">
+      Backlog
+    </a>
+
+    {% if active_sprint %}
+      <a class="nav-link text-dark px-3 py-2 rounded-3" href="{% url 'sprint-kanban' active_sprint.id %}">
+        Active Sprint
+      </a>
+    {% else %}
+      <span class="nav-link text-muted px-3 py-2 rounded-3">
+        Active Sprint
+      </span>
+    {% endif %}
+
+    <a class="nav-link text-dark px-3 py-2 rounded-3" href="{% url 'project-detail' project.id %}">
+      Issues
+    </a>
+
+    <a class="nav-link text-dark px-3 py-2 rounded-3" href="{% url 'project-detail' project.id %}">
+      Epics
+    </a>
+  </nav>
+</div>

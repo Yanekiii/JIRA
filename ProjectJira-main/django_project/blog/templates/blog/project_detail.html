@@ -1,122 +1,161 @@
 {% extends "blog/base.html" %}
-
 {% block content %}
-<div class="card border-0 shadow-sm rounded-4 mb-4">
-    <div class="card-body p-4">
 
-        <div class="d-flex justify-content-between align-items-start mb-4">
+<div class="project-layout">
+  <aside class="project-layout-sidebar">
+    {% include "blog/partials/project_sidebar.html" %}
+  </aside>
 
-            <div>
-                <h2 class="h3 fw-bold mb-1">{{ object.name }}</h2>
-                <div class="text-muted">
-                    Code: {{ object.code }}
-                </div>
-            </div>
+  <section class="project-layout-content">
+    <div class="p-4">
 
-            {% if object.created_by == user %}
-            <div>
-                <a class="btn btn-outline-primary btn-sm rounded-pill px-3"
-                   href="{% url 'project-update' object.id %}">
-                    Edit
-                </a>
-
-                <a class="btn btn-outline-danger btn-sm rounded-pill px-3 ms-2"
-                   href="{% url 'project-delete' object.id %}">
-                    Delete
-                </a>
-            </div>
-            {% endif %}
-
-        </div>
-
-        <div class="mb-4">
-            <h5 class="fw-semibold">Description</h5>
-            <p class="text-secondary mb-0">{{ object.description }}</p>
-        </div>
-
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <div class="border rounded-3 p-3 bg-light">
-                    <small class="text-muted d-block">Start Date</small>
-                    <strong>{{ object.start_date }}</strong>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <div class="border rounded-3 p-3 bg-light">
-                    <small class="text-muted d-block">End Date</small>
-                    <strong>{{ object.end_date }}</strong>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <div class="border rounded-3 p-3 bg-light">
-                    <small class="text-muted d-block">Sprint Duration</small>
-                    <strong>{{ object.sprint_duration }} days</strong>
-                </div>
-            </div>
-        </div>
-
-        <div class="mt-3">
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <div>
+            <h2 class="fw-bold mb-1">
+              {{ project.name }}
+              <span class="badge bg-secondary">{{ project.code }}</span>
+            </h2>
             <small class="text-muted">
-                Created by {{ object.created_by }}
+              {{ project.start_date }} → {{ project.end_date }} |
+              {{ project.get_workload_unit_display }}
             </small>
+          </div>
+
+          {% if user.is_staff %}
+            <div class="d-flex gap-2">
+              <a href="{% url 'project-update' project.id %}" class="btn btn-outline-secondary btn-sm">Edit Project</a>
+              <a href="{% url 'project-delete' project.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+            </div>
+          {% endif %}
         </div>
 
-        <hr class="my-4">
+        <p class="text-muted mt-3 mb-0">{{ project.description }}</p>
+      </div>
 
-        <h4 class="fw-bold mb-3">Project Tickets</h4>
+      <div class="d-flex gap-2 mb-4 flex-wrap">
+        <a href="{% url 'product-backlog' project.id %}" class="btn btn-outline-primary btn-sm rounded-pill">
+          Product Backlog
+        </a>
 
-        {% for ticket in object.tickets.all %}
-        <div class="card mb-3
-            {% if ticket.priority == 'high' %}
-                border-danger
-            {% elif ticket.priority == 'medium' %}
-                border-warning
-            {% else %}
-                border-success
-            {% endif %}
-        ">
-            <div class="card-body">
+        {% if active_sprint %}
+          <a href="{% url 'sprint-kanban' active_sprint.id %}" class="btn btn-outline-dark btn-sm rounded-pill">
+            Active Sprint Kanban
+          </a>
+        {% endif %}
 
-                <h5 class="mb-2">
-                    <a href="{% url 'ticket-detail' ticket.id %}">
-                        {{ ticket.title }}
-                    </a>
-                </h5>
+        {% if user.is_staff %}
+          <a href="{% url 'sprint-create' project.id %}" class="btn btn-outline-success btn-sm rounded-pill">
+            + New Sprint
+          </a>
+          <a href="{% url 'epic-create' project.id %}" class="btn btn-outline-info btn-sm rounded-pill">
+            + New Epic
+          </a>
+          <a href="{% url 'ticket-create' %}" class="btn btn-primary btn-sm rounded-pill">
+            + New Ticket
+          </a>
+        {% endif %}
+      </div>
 
-                <p class="text-muted mb-3">
-                    {{ ticket.description }}
-                </p>
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+          <h4 class="fw-bold mb-3">Sprints</h4>
+
+          {% for sprint in sprints %}
+            <div class="card mb-3 border rounded-3">
+              <div class="card-header d-flex justify-content-between align-items-center bg-white flex-wrap gap-2">
+                <div>
+                  <strong>{{ sprint.name }}</strong>
+                  <span class="badge ms-2 {% if sprint.status == 'active' %}bg-success{% elif sprint.status == 'planned' %}bg-secondary{% else %}bg-dark{% endif %}">
+                    {{ sprint.get_status_display }}
+                  </span>
+                  <small class="text-muted ms-2">{{ sprint.start_date }} → {{ sprint.end_date }}</small>
+                </div>
 
                 <div class="d-flex gap-2 flex-wrap">
+                  <a href="{% url 'sprint-kanban' sprint.id %}" class="btn btn-outline-primary btn-sm">Kanban</a>
 
-                    <span class="badge bg-secondary">
-                        {{ ticket.status }}
-                    </span>
-
-                    {% if ticket.priority == "high" %}
-                        <span class="badge bg-danger">High</span>
-                    {% elif ticket.priority == "medium" %}
-                        <span class="badge bg-warning text-dark">Medium</span>
-                    {% else %}
-                        <span class="badge bg-success">Low</span>
+                  {% if user.is_staff %}
+                    {% if sprint.status == 'planned' %}
+                      <a href="{% url 'sprint-start' sprint.id %}" class="btn btn-success btn-sm">Start</a>
+                    {% elif sprint.status == 'active' %}
+                      <a href="{% url 'sprint-close' sprint.id %}" class="btn btn-warning btn-sm">Close</a>
                     {% endif %}
-
-                    <span class="badge bg-light text-dark">
-                        👤 {{ ticket.author }}
-                    </span>
-
+                    <a href="{% url 'sprint-update' sprint.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                    <a href="{% url 'sprint-delete' sprint.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+                  {% endif %}
                 </div>
+              </div>
 
+              {% if sprint.goal %}
+                <div class="card-body pt-2 pb-2">
+                  <small class="text-muted">{{ sprint.goal }}</small>
+                </div>
+              {% endif %}
+
+              <div class="card-body pt-1">
+                {% for ticket in sprint.tickets.all %}
+                  border rounded-3 mb-0">
+              No sprints yet.
+              {% if user.is_staff %}
+                <a href="{% url 'sprint-create' project.id %}">Create one</a>.
+              {% endif %}
             </div>
+          {% endfor %}
         </div>
-        {% empty %}
-        <div class="alert alert-info">
-            No tickets in this project yet.
+      </div>
+
+      {% if epics %}
+        <div class="card border-0 shadow-sm rounded-4">
+          <div class="card-body">
+            <h4 class="fw-bold mb-3">Epics</h4>
+
+            {% for epic in epics %}
+              <div class="card mb-2 border-0 shadow-sm rounded-3" style="border-left: 4px solid {{ epic.color }} !important;">
+                <div class="card-body py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <div>
+                    <span class="fw-semibold">{{ epic.title }}</span>
+                    <span class="badge ms-2 {% if epic.status == 'active' %}bg-success{% elif epic.status == 'completed' %}bg-dark{% else %}bg-danger{% endif %}">
+                      {{ epic.get_status_display }}
+                    </span>
+                  </div>
+
+                  {% if user.is_staff %}
+                    <div class="d-flex gap-2">
+                      <a href="{% url 'epic-update' epic.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                      <a href="{% url 'epic-delete' epic.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
         </div>
-        {% endfor %}
+      {% endif %}<div class="d-flex justify-content-between align-items-center border-bottom py-2 flex-wrap gap-2">
+                    <div>
+                      <small class="text-muted">{{ ticket.human_id }}</small>
+                      <a href="{% url 'ticket-detail' ticket.id %}" class="ms-2 text-decoration-none text-dark">
+                        {{ ticket.title }}
+                      </a>
+                      {% if ticket.ticket_type == 'bug' %}
+                        <span class="badge bg-danger ms-1">Bug</span>
+                      {% endif %}
+                    </div>
+
+                    <span class="badge {% if ticket.status == 'new' %}bg-secondary{% elif ticket.status == 'active' %}bg-success{% elif ticket.status == 'closed' %}bg-dark{% else %}bg-danger{% endif %}">
+                      {{ ticket.get_status_display }}
+                    </span>
+                  </div>
+                {% empty %}
+                  <small class="text-muted">No tickets in this sprint yet.</small>
+                {% endfor %}
+              </div>
+            </div>
+          {% empty %}
+            <div class="alert alert-light 
 
     </div>
+  </section>
 </div>
+
 {% endblock content %}

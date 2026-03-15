@@ -1,33 +1,133 @@
 {% extends "blog/base.html" %}
-
 {% block content %}
-<h2 class="mb-4">Projects</h2>
 
-<a class="btn btn-primary mb-3" href="{% url 'project-create' %}">
-    Create Project
-</a>
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
 
-{% for project in projects %}
-    <div class="card mb-3">
-        <div class="card-body">
-            <h4>
-                <a href="{% url 'project-detail' project.id %}">
-                    {{ project.name }}
-                </a>
-            </h4>
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white border-0 px-4 py-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <span class="text-muted fw-semibold">{{ object.human_id }}</span>
 
-            <p>{{ project.description }}</p>
+            {% if object.ticket_type == 'story' %}
+              <span class="badge bg-primary">Story</span>
+            {% elif object.ticket_type == 'bug' %}
+              <span class="badge bg-danger">Bug</span>
+            {% else %}
+              <span class="badge bg-secondary">Task</span>
+            {% endif %}
 
-            <small>
-                Code: {{ project.code }} |
-                Start: {{ project.start_date }} |
-                End: {{ project.end_date }}
-            </small>
+            <span class="badge
+              {% if object.status == 'new' %}bg-secondary
+              {% elif object.status == 'active' %}bg-success
+              {% elif object.status == 'closed' %}bg-dark
+              {% else %}bg-danger{% endif %}">
+              {{ object.get_status_display }}
+            </span>
+          </div>
+
+          {% if user == object.reporter or user.is_staff %}
+            <div class="d-flex gap-2">
+              <a href="{% url 'ticket-update' object.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Edit</a>
+              <a href="{% url 'ticket-delete' object.id %}" class="btn btn-outline-danger btn-sm rounded-pill px-3">Delete</a>
+            </div>
+          {% endif %}
         </div>
+
+        <div class="card-body p-4">
+          <div class="mb-4">
+            <h2 class="fw-bold mb-2">{{ object.title }}</h2>
+            <p class="text-muted mb-0">
+              {% if object.description %}
+                {{ object.description }}
+              {% else %}
+                No description provided.
+              {% endif %}
+            </p>
+          </div>
+
+          <div class="row g-3">
+
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100 bg-white">
+                <small class="text-muted d-block mb-1">Priority</small>
+                <strong>{{ object.get_priority_display }}</strong>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100 bg-white">
+                <small class="text-muted d-block mb-1">Project</small>
+                <strong>
+                  {% if object.project %}
+                    <a href="{% url 'project-detail' object.project.id %}" class="text-decoration-none">
+                      {{ object.project.name }}
+                    </a>
+                  {% else %}
+                    —
+                  {% endif %}
+                </strong>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100 bg-white">
+                <small class="text-muted d-block mb-1">Sprint</small>
+                <strong>{% if object.sprint %}{{ object.sprint.name }}{% else %}Backlog{% endif %}</strong>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100 bg-white">
+                <small class="text-muted d-block mb-1">Reporter</small>
+                <strong>{{ object.reporter.username }}</strong>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100 bg-white">
+                <small class="text-muted d-block mb-1">Assignee</small>
+                <strong>{% if object.assignee %}{{ object.assignee.username }}{% else %}Unassigned{% endif %}</strong>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="border rounded-4 p-3 h-100 bg-white">
+                <small class="text-muted d-block mb-1">Created</small>
+                <strong>{{ object.date_created|date:"M d, Y" }}</strong>
+              </div>
+            </div>
+
+            {% if object.workload_initial %}
+              <div class="col-md-4">
+                <div class="border rounded-4 p-3 h-100 bg-white">
+                  <small class="text-muted d-block mb-1">Initial workload</small>
+                  <strong>{{ object.workload_initial }}</strong>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="border rounded-4 p-3 h-100 bg-white">
+                  <small class="text-muted d-block mb-1">Remaining</small>
+                  <strong>{{ object.workload_remaining }}</strong>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="border rounded-4 p-3 h-100 bg-white">
+                  <small class="text-muted d-block mb-1">Done</small>
+                  <strong>{{ object.workload_done }}</strong>
+                </div>
+              </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </div>
+
     </div>
-{% empty %}
-    <div class="alert alert-info">
-        No projects yet.
-    </div>
-{% endfor %}
-{% endblock content %}
+  </div>
+</div>
+
+{% endblock %}
