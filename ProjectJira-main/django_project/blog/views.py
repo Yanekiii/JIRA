@@ -1,10 +1,20 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.http import JsonResponse
-from .models import Ticket, Project, Sprint, Epic
+from django.contrib.auth.models import User
+from .models import Ticket, Project, Sprint, Epic, ProjectMembership
+
+
+# ── Helper : rôle du user dans un projet ──────────────────────────────────────
+def get_user_role(user, project):
+    if user.is_staff:
+        return 'admin'
+    membership = ProjectMembership.objects.filter(user=user, project=project).first()
+    return membership.role if membership else None
 
 
 class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -13,9 +23,11 @@ class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
 
 
 # ── Misc ──────────────────────────────────────────────────────────────────────
+def about(request):
+    return render(request, 'blog/about.html', {'title': 'About'})
+
 def home(request):
     return render(request, 'blog/home.html', {'tickets': Ticket.objects.all()})
-
 
 def kanban_board(request):
     return render(request, 'blog/kanban.html', {
@@ -43,7 +55,6 @@ class TicketDetailView(LoginRequiredMixin, DetailView):
 
 class TicketCreateView(LoginRequiredMixin, CreateView):
     model = Ticket
-    # demandeur ajouté, workload_initial en entier
     fields = [
         'ticket_type', 'title', 'description',
         'project', 'epic', 'parent_ticket',
@@ -55,7 +66,12 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
     template_name = 'blog/post_form.html'
 
     def form_valid(self, form):
-        form.instance.reporter = self.request.user  # auteur auto
+        project = form.cleaned_data.get('project')
+        role = get_user_role(self.request.user, project)
+        if role not in ['admin', 'contributor']:
+            messages.error(self.request, "You don't have permission to create tickets in this project.")
+            return redirect('project-detail', pk=project.pk)
+        form.instance.reporter = self.request.user
         return super().form_valid(form)
 
 
@@ -72,7 +88,9 @@ class TicketUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = 'blog/post_form.html'
 
     def test_func(self):
-        return self.request.user == self.get_object().reporter or self.request.user.is_staff
+        ticket = self.get_object()
+        role = get_user_role(self.request.user, ticket.project)
+        return role in ['admin', 'contributor']
 
 
 class TicketDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -81,12 +99,17 @@ class TicketDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     success_url = '/'
 
     def test_func(self):
-        return self.request.user == self.get_object().reporter or self.request.user.is_staff
+        ticket = self.get_object()
+        role = get_user_role(self.request.user, ticket.project)
+        return role == 'admin' or self.request.user == ticket.reporter
 
 
 def ticket_move(request, pk):
     if request.method == 'POST':
         ticket = get_object_or_404(Ticket, pk=pk)
+        role = get_user_role(request.user, ticket.project)
+        if role not in ['admin', 'contributor']:
+            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
         new_status = request.POST.get('status')
         if new_status in dict(Ticket.STATUS_CHOICES):
             ticket.status = new_status
@@ -95,9 +118,34 @@ def ticket_move(request, pk):
     return JsonResponse({'success': False}, status=400)
 
 
+def ticket_priority_up(request, pk):
+    ticket = get_object_or_404(Ticket, pk=pk)
+    above = Ticket.objects.filter(
+        project=ticket.project, sprint__isnull=True,
+        backlog_order__lt=ticket.backlog_order
+    ).order_by('-backlog_order').first()
+    if above:
+        ticket.backlog_order, above.backlog_order = above.backlog_order, ticket.backlog_order
+        ticket.save()
+        above.save()
+    return redirect('product-backlog', pk=ticket.project.pk)
+
+
+def ticket_priority_down(request, pk):
+    ticket = get_object_or_404(Ticket, pk=pk)
+    below = Ticket.objects.filter(
+        project=ticket.project, sprint__isnull=True,
+        backlog_order__gt=ticket.backlog_order
+    ).order_by('backlog_order').first()
+    if below:
+        ticket.backlog_order, below.backlog_order = below.backlog_order, ticket.backlog_order
+        ticket.save()
+        below.save()
+    return redirect('product-backlog', pk=ticket.project.pk)
+
+
 def backlog_reorder(request, project_id):
     import json
-    from django.views.decorators.http import require_POST
     project = get_object_or_404(Project, pk=project_id)
     try:
         data = json.loads(request.body)
@@ -110,11 +158,17 @@ def backlog_reorder(request, project_id):
 
 
 # ── Projects ──────────────────────────────────────────────────────────────────
-class ProjectListView(ListView):
+class ProjectListView(LoginRequiredMixin, ListView):
     model = Project
     template_name = 'blog/projects.html'
     context_object_name = 'projects'
-    ordering = ['-start_date']
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Project.objects.all().order_by('-start_date')
+        return Project.objects.filter(
+            memberships__user=self.request.user
+        ).order_by('-start_date')
 
 
 class ProjectDetailView(LoginRequiredMixin, DetailView):
@@ -125,11 +179,11 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         project = self.get_object()
         sprints = project.sprints.all().prefetch_related('tickets')
-        active_sprint = sprints.filter(status='active').first()
         context['sprints'] = sprints
         context['epics'] = project.epics.all()
         context['members'] = project.memberships.select_related('user')
-        context['active_sprint'] = active_sprint
+        context['active_sprint'] = sprints.filter(status='active').first()
+        context['user_role'] = get_user_role(self.request.user, project)
         return context
 
 
@@ -159,6 +213,7 @@ class ProjectDeleteView(AdminRequiredMixin, DeleteView):
 
 def product_backlog(request, pk):
     project = get_object_or_404(Project, pk=pk)
+    role = get_user_role(request.user, project)
     backlog_items = Ticket.objects.filter(
         project=project,
         sprint__isnull=True,
@@ -167,6 +222,48 @@ def product_backlog(request, pk):
     return render(request, 'blog/backlog.html', {
         'project': project,
         'backlog_items': backlog_items,
+        'user_role': role,
+    })
+
+
+# ── Members ───────────────────────────────────────────────────────────────────
+@login_required
+def manage_members(request, project_pk):
+    project = get_object_or_404(Project, pk=project_pk)
+    if not request.user.is_staff:
+        messages.error(request, "Only admins can manage members.")
+        return redirect('project-detail', pk=project_pk)
+
+    all_users   = User.objects.exclude(pk=request.user.pk).order_by('username')
+    memberships = ProjectMembership.objects.filter(project=project).select_related('user')
+    member_ids  = list(memberships.values_list('user_id', flat=True))
+
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        role    = request.POST.get('role')
+        action  = request.POST.get('action')
+        target  = get_object_or_404(User, pk=user_id)
+
+        if action == 'add':
+            ProjectMembership.objects.get_or_create(
+                project=project, user=target,
+                defaults={'role': role or 'contributor'}
+            )
+            messages.success(request, f'{target.username} added as {role}.')
+        elif action == 'update':
+            ProjectMembership.objects.filter(project=project, user=target).update(role=role)
+            messages.success(request, f'{target.username} role updated to {role}.')
+        elif action == 'remove':
+            ProjectMembership.objects.filter(project=project, user=target).delete()
+            messages.success(request, f'{target.username} removed from project.')
+
+        return redirect('manage-members', project_pk=project_pk)
+
+    return render(request, 'blog/manage_members.html', {
+        'project':     project,
+        'all_users':   all_users,
+        'memberships': memberships,
+        'member_ids':  member_ids,
     })
 
 
@@ -216,14 +313,37 @@ def sprint_close(request, pk):
 
 def sprint_kanban(request, pk):
     sprint = get_object_or_404(Sprint, pk=pk)
+    role = get_user_role(request.user, sprint.project)
     context = {
-        'sprint': sprint,
+        'sprint':    sprint,
         'new':       sprint.tickets.filter(status='new'),
         'active':    sprint.tickets.filter(status='active'),
         'closed':    sprint.tickets.filter(status='closed'),
         'cancelled': sprint.tickets.filter(status='cancelled'),
+        'user_role': role,
     }
     return render(request, 'blog/sprint_kanban.html', context)
+
+
+# ── Issues & Epics pages ──────────────────────────────────────────────────────
+def project_issues(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    tickets = Ticket.objects.filter(project=project).order_by('backlog_order', '-date_created')
+    return render(request, 'blog/project_issues.html', {
+        'project':   project,
+        'tickets':   tickets,
+        'user_role': get_user_role(request.user, project),
+        'active_sprint': project.sprints.filter(status='active').first(),
+    })
+
+def project_epics(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    return render(request, 'blog/project_epics.html', {
+        'project':   project,
+        'epics':     Epic.objects.filter(project=project),
+        'user_role': get_user_role(request.user, project),
+        'active_sprint': project.sprints.filter(status='active').first(),
+    })
 
 
 # ── Epics ─────────────────────────────────────────────────────────────────────

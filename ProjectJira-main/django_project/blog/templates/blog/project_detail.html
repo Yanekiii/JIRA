@@ -25,9 +25,11 @@
           {% if user.is_staff %}
             <div class="d-flex gap-2">
               <a href="{% url 'project-update' project.id %}" class="btn btn-outline-secondary btn-sm">Edit Project</a>
+              <a href="{% url 'manage-members' project.id %}" class="btn btn-outline-dark btn-sm">Members</a>
               <a href="{% url 'project-delete' project.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
             </div>
           {% endif %}
+
         </div>
 
         <p class="text-muted mt-3 mb-0">{{ project.description }}</p>
