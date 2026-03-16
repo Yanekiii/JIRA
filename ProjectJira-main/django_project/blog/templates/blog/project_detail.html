@@ -29,49 +29,41 @@
               <a href="{% url 'project-delete' project.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
             </div>
           {% endif %}
-
         </div>
 
         <p class="text-muted mt-3 mb-0">{{ project.description }}</p>
+
+        <!-- Team Members — aperçu simple -->
         <div class="card border-0 shadow-sm rounded-4 mb-4 mt-4">
-  <div class="card-body">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h4 class="fw-bold mb-0">Team Members</h4>
+              {% if user.is_staff %}
+                <a href="{% url 'manage-members' project.id %}" class="btn btn-outline-dark btn-sm rounded-pill">⚙ Manage</a>
+              {% endif %}
+            </div>
 
-    <h4 class="fw-bold mb-3">Team Members</h4>
-
-    <table class="table">
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Role</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for member in members %}
-        <tr>
-          <td>{{ member.user.username }}</td>
-          <td>{{ member.role }}</td>
-
-          <td>
-            <a href="{% url 'update-role' member.id %}" class="btn btn-sm btn-outline-secondary">
-              Edit
-            </a>
-
-            <a href="{% url 'remove-member' member.id %}" class="btn btn-sm btn-outline-danger">
-              Remove
-            </a>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="3">No members yet</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+            {% if members %}
+              <div class="d-flex flex-wrap gap-2">
+                {% for member in members %}
+                  <span class="badge rounded-pill py-2 px-3 fs-6
+                    {% if member.role == 'admin' %}bg-danger
+                    {% elif member.role == 'contributor' %}bg-success
+                    {% else %}bg-secondary{% endif %}">
+                    {{ member.user.username }}
+                    <small class="opacity-75 ms-1">{{ member.get_role_display }}</small>
+                  </span>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted mb-0">No members yet.
+                {% if user.is_staff %}
+                  <a href="{% url 'manage-members' project.id %}">Add some</a>.
+                {% endif %}
+              </p>
+            {% endif %}
+          </div>
+        </div>
       </div>
 
       <div class="d-flex gap-2 mb-4 flex-wrap">
@@ -146,7 +138,6 @@
                         <span class="badge bg-danger ms-1">Bug</span>
                       {% endif %}
                     </div>
-
                     <span class="badge {% if ticket.status == 'new' %}bg-secondary{% elif ticket.status == 'active' %}bg-success{% elif ticket.status == 'closed' %}bg-dark{% else %}bg-danger{% endif %}">
                       {{ ticket.get_status_display }}
                     </span>
@@ -171,7 +162,6 @@
         <div class="card border-0 shadow-sm rounded-4">
           <div class="card-body">
             <h4 class="fw-bold mb-3">Epics</h4>
-
             {% for epic in epics %}
               <div class="card mb-2 border-0 shadow-sm rounded-3" style="border-left: 4px solid {{ epic.color }} !important;">
                 <div class="card-body py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -181,7 +171,6 @@
                       {{ epic.get_status_display }}
                     </span>
                   </div>
-
                   {% if user.is_staff %}
                     <div class="d-flex gap-2">
                       <a href="{% url 'epic-update' epic.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
