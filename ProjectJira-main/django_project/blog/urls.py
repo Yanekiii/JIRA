@@ -39,5 +39,12 @@ urlpatterns = [
     path('project/<int:project_pk>/epic/new/', EpicCreateView.as_view(), name='epic-create'),
     path('epic/<int:pk>/update/', EpicUpdateView.as_view(), name='epic-update'),
     path('epic/<int:pk>/delete/', EpicDeleteView.as_view(), name='epic-delete'),
+<<<<<<< Updated upstream
     path('project/<int:project_id>/backlog/reorder/', views.backlog_reorder, name='backlog-reorder'),
+=======
+
+    # Project Members
+    path("membership/<int:membership_id>/update/", views.update_role, name="update-role"),
+    path("membership/<int:membership_id>/delete/", views.remove_member, name="remove-member"),
+>>>>>>> Stashed changes
 ]

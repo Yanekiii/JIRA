@@ -5,7 +5,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from .models import Ticket, Project, Sprint, Epic
-
+from .models import ProjectMembership
 
 class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
@@ -169,7 +169,31 @@ def product_backlog(request, pk):
         'backlog_items': backlog_items,
     })
 
+from django.contrib.auth.models import User
 
+def update_role(request, membership_id):
+    membership = get_object_or_404(ProjectMembership, id=membership_id)
+    users = User.objects.all()
+
+    if request.method == "POST":
+        membership.user_id = request.POST.get("user")
+        membership.role = request.POST.get("role")
+        membership.save()
+
+        return redirect("project-detail", pk=membership.project.pk)
+
+    return render(request, "blog/update_role.html", {
+        "membership": membership,
+        "users": users
+    })
+
+def remove_member(request, membership_id):
+    membership = get_object_or_404(ProjectMembership, id=membership_id)
+    project_id = membership.project.pk
+
+    membership.delete()
+
+    return redirect("project-detail", pk=project_id)
 # ── Sprints ───────────────────────────────────────────────────────────────────
 class SprintCreateView(AdminRequiredMixin, CreateView):
     model = Sprint
