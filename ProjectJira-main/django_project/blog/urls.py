@@ -31,6 +31,7 @@ urlpatterns = [
     path('project/<int:pk>/issues/', views.project_issues, name='project-issues'),
     path('project/<int:pk>/epics/', views.project_epics, name='project-epics'),
     path('project/<int:project_pk>/members/', views.manage_members, name='manage-members'),
+    path('project/<int:project_id>/backlog/reorder/', views.backlog_reorder, name='backlog-reorder'),
 
     # Sprints
     path('project/<int:project_pk>/sprint/new/', SprintCreateView.as_view(), name='sprint-create'),
@@ -44,6 +45,4 @@ urlpatterns = [
     path('project/<int:project_pk>/epic/new/', EpicCreateView.as_view(), name='epic-create'),
     path('epic/<int:pk>/update/', EpicUpdateView.as_view(), name='epic-update'),
     path('epic/<int:pk>/delete/', EpicDeleteView.as_view(), name='epic-delete'),
-
-    path('project/<int:project_id>/backlog/reorder/', views.backlog_reorder, name='backlog-reorder'),
 ]

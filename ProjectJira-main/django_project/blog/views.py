@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from .models import Ticket, Project, Sprint, Epic, ProjectMembership
 
 
-# ── Helper : rôle du user dans un projet ──────────────────────────────────────
+# ── Helper ────────────────────────────────────────────────────────────────────
 def get_user_role(user, project):
     if user.is_staff:
         return 'admin'
@@ -223,6 +223,7 @@ def product_backlog(request, pk):
         'project': project,
         'backlog_items': backlog_items,
         'user_role': role,
+        'active_sprint': project.sprints.filter(status='active').first(),
     })
 
 
@@ -321,27 +322,30 @@ def sprint_kanban(request, pk):
         'closed':    sprint.tickets.filter(status='closed'),
         'cancelled': sprint.tickets.filter(status='cancelled'),
         'user_role': role,
+        'project':   sprint.project,
+        'active_sprint': sprint if sprint.status == 'active' else None,
     }
     return render(request, 'blog/sprint_kanban.html', context)
 
 
-# ── Issues & Epics pages ──────────────────────────────────────────────────────
+# ── Issues & Epics ────────────────────────────────────────────────────────────
 def project_issues(request, pk):
     project = get_object_or_404(Project, pk=pk)
     tickets = Ticket.objects.filter(project=project).order_by('backlog_order', '-date_created')
     return render(request, 'blog/project_issues.html', {
-        'project':   project,
-        'tickets':   tickets,
-        'user_role': get_user_role(request.user, project),
+        'project':      project,
+        'tickets':      tickets,
+        'user_role':    get_user_role(request.user, project),
         'active_sprint': project.sprints.filter(status='active').first(),
     })
+
 
 def project_epics(request, pk):
     project = get_object_or_404(Project, pk=pk)
     return render(request, 'blog/project_epics.html', {
-        'project':   project,
-        'epics':     Epic.objects.filter(project=project),
-        'user_role': get_user_role(request.user, project),
+        'project':      project,
+        'epics':        Epic.objects.filter(project=project),
+        'user_role':    get_user_role(request.user, project),
         'active_sprint': project.sprints.filter(status='active').first(),
     })
 
