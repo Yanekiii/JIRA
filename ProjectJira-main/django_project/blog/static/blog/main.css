@@ -1,115 +1,733 @@
+/* ============================================================
+   BENYS — Design Atmosphère CLIENT (HELB Ilya Prigogine)
+   Palette : Navy #1a3a6b | Orange #f47920 | White | Light grey
+   Typo : Lora (display) + Source Sans 3 (body)
+   Style : Institutionnel, académique, sobre, professionnel
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+
+/* ── CSS Variables ── */
+:root {
+  --navy:        #1a3a6b;
+  --navy-mid:    #1f4580;
+  --navy-light:  #e8eef7;
+  --navy-pale:   #f0f4fb;
+  --orange:      #f47920;
+  --orange-dark: #d4651a;
+  --orange-light: rgba(244, 121, 32, 0.1);
+  --arc-red:     #e63329;
+  --arc-green:   #4caf50;
+  --arc-purple:  #9c27b0;
+  --white:       #ffffff;
+  --off-white:   #f7f9fc;
+  --grey-light:  #e9ecef;
+  --grey-mid:    #adb5bd;
+  --grey-dark:   #495057;
+  --text:        #2c3e50;
+  --border:      #d0daea;
+  --shadow-sm:   0 1px 6px rgba(26,58,107,0.08);
+  --shadow-md:   0 4px 20px rgba(26,58,107,0.12);
+  --radius:      8px;
+  --radius-lg:   12px;
+  --font-display: 'Lora', Georgia, serif;
+  --font-body:    'Source Sans 3', sans-serif;
+}
+
+/* ── Reset / Base ── */
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
-  background: #fafafa;
-  color: #333333;
+  background-color: var(--off-white);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 400;
   margin-top: 0;
+  padding-top: 74px;
+  min-height: 100vh;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: #444444;
+  font-family: var(--font-display);
+  color: var(--navy);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  line-height: 1.25;
 }
 
-ul {
-  margin: 0;
+a { color: var(--navy-mid); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--orange); }
+
+code {
+  color: var(--navy);
+  background: var(--navy-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 600;
 }
 
-.bg-steel {
-  background-color: #5f788a;
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--grey-light); }
+::-webkit-scrollbar-thumb { background: var(--navy-mid); border-radius: 3px; opacity: 0.5; }
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+nav.navbar,
+.navbar.navbar-light,
+.navbar.navbar-expand-lg,
+.navbar.bg-white,
+.navbar-light.bg-white {
+  background-color: var(--navy) !important;
+  background: var(--navy) !important;
+  border-bottom: 3px solid var(--orange) !important;
+  padding: 0.6rem 0 !important;
+  box-shadow: 0 2px 12px rgba(26,58,107,0.2) !important;
+  height: 74px !important;
 }
 
-.site-header .navbar-nav .nav-link {
-  color: #cbd5db;
+.navbar-brand,
+.navbar .navbar-brand,
+a.navbar-brand {
+  font-family: var(--font-display) !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: var(--white) !important;
+  letter-spacing: 0.02em !important;
+}
+.navbar-brand:hover { opacity: 0.85 !important; color: var(--white) !important; }
+
+.navbar .nav-link,
+.navbar .navbar-nav .nav-link,
+nav.navbar a.nav-link {
+  color: rgba(255,255,255,0.85) !important;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  padding: 0.45rem 0.85rem !important;
+  border-radius: var(--radius) !important;
+  transition: all 0.2s !important;
+}
+.navbar .nav-link:hover,
+.navbar .navbar-nav .nav-link:hover {
+  color: var(--white) !important;
+  background: rgba(255,255,255,0.12) !important;
 }
 
-.site-header .navbar-nav .nav-link:hover {
-  color: #ffffff;
+/* ── Icônes profil & déconnexion ── */
+nav.navbar .bi,
+.navbar .nav-link .bi,
+.navbar form button .bi {
+  color: rgba(255,255,255,0.85) !important;
+  font-size: 1.2rem !important;
+}
+nav.navbar form button,
+nav.navbar .btn-link {
+  color: rgba(255,255,255,0.8) !important;
+}
+nav.navbar form button:hover,
+nav.navbar .btn-link:hover {
+  color: #ffb3b3 !important;
+}
+nav.navbar a[href*="profile"],
+nav.navbar a.nav-link[title="Profile"] {
+  color: rgba(255,255,255,0.85) !important;
+}
+nav.navbar a[href*="profile"]:hover {
+  color: var(--white) !important;
 }
 
-.site-header .navbar-nav .nav-link.active {
+/* ── Buttons ── */
+.btn-primary {
+  background: var(--orange);
+  border: none;
+  color: var(--white) !important;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px rgba(244,121,32,0.25);
+  transition: all 0.2s;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background: var(--orange-dark);
+  box-shadow: 0 4px 16px rgba(244,121,32,0.35);
+  transform: translateY(-1px);
+  color: var(--white) !important;
+}
+.btn-primary:active { transform: translateY(0); }
+
+.btn-outline-success {
+  border-color: #4caf50;
+  color: #4caf50;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-outline-success:hover {
+  background: #4caf50;
+  color: var(--white);
+}
+
+.btn-outline-secondary {
+  border-color: var(--border);
+  color: var(--grey-dark);
   font-weight: 500;
+  background: var(--white);
+  transition: all 0.2s;
+}
+.btn-outline-secondary:hover {
+  background: var(--navy-light);
+  border-color: var(--navy);
+  color: var(--navy);
 }
 
-.content-section {
-  background: #ffffff;
-  padding: 10px 20px;
-  border: 1px solid #dddddd;
-  border-radius: 3px;
-  margin-bottom: 20px;
+.btn-outline-primary {
+  border-color: var(--navy);
+  color: var(--navy);
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-outline-primary:hover {
+  background: var(--navy);
+  color: var(--white);
 }
 
-.article-title {
-  color: #444444;
+.btn-outline-danger {
+  border-color: var(--arc-red);
+  color: var(--arc-red);
+  transition: all 0.2s;
+}
+.btn-outline-danger:hover {
+  background: var(--arc-red);
+  color: var(--white);
 }
 
-a.article-title:hover {
-  color: #428bca;
-  text-decoration: none;
+.btn-outline-dark {
+  border-color: var(--grey-dark);
+  color: var(--grey-dark);
+  transition: all 0.2s;
+}
+.btn-outline-dark:hover {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
 }
 
-.article-content {
-  white-space: pre-line;
+.btn-outline-info {
+  border-color: var(--navy-mid);
+  color: var(--navy-mid);
+  transition: all 0.2s;
+}
+.btn-outline-info:hover {
+  background: var(--navy-mid);
+  color: var(--white);
 }
 
-.article-img {
-  height: 65px;
-  width: 65px;
-  margin-right: 16px;
+.btn-success {
+  background: #4caf50;
+  border: none;
+  color: var(--white);
+  font-weight: 600;
 }
 
-.article-metadata {
-  padding-bottom: 1px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid #e3e3e3
+.btn-warning {
+  background: var(--orange);
+  border: none;
+  color: var(--white);
+  font-weight: 600;
 }
 
-.article-metadata a:hover {
-  color: #333;
-  text-decoration: none;
+.btn-danger {
+  background: var(--arc-red);
+  border: none;
+  color: var(--white);
+  font-weight: 600;
 }
 
-.article-svg {
-  width: 25px;
-  height: 25px;
+.btn-link {
+  color: var(--grey-mid) !important;
+  transition: color 0.2s;
+}
+.btn-link:hover { color: var(--arc-red) !important; }
+
+.btn {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  border-radius: var(--radius) !important;
+}
+
+/* ── Alerts ── */
+.alert {
+  background: var(--white);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius);
+}
+.alert-success { border-left: 4px solid #4caf50; background: #f1fbf2; }
+.alert-danger  { border-left: 4px solid var(--arc-red); background: #fdf2f2; }
+.alert-info    { border-left: 4px solid var(--navy-mid); background: var(--navy-pale); }
+.alert-light   { background: var(--off-white); border-color: var(--border); }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  background: var(--white) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  color: var(--text);
+  transition: box-shadow 0.2s;
+}
+.card:hover { box-shadow: var(--shadow-md) !important; }
+
+.card-header {
+  background: var(--navy-pale) !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--navy) !important;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+  font-weight: 600;
+}
+
+.card-body { color: var(--text); }
+
+/* ── Kanban column headers ── */
+.card-header[style*="background-color:#6c757d"] {
+  background: var(--grey-dark) !important;
+  color: var(--white) !important;
+}
+.card-header.bg-success {
+  background: #388e3c !important;
+  color: var(--white) !important;
+}
+.card-header.bg-dark {
+  background: var(--navy) !important;
+  color: var(--white) !important;
+  border-bottom: 3px solid var(--orange) !important;
+}
+.card-header.bg-danger {
+  background: var(--arc-red) !important;
+  color: var(--white) !important;
+}
+
+/* ── Table cards ── */
+.table-responsive { border-radius: var(--radius-lg); overflow: hidden; }
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.table {
+  color: var(--text);
+  margin-bottom: 0;
+}
+
+.table thead tr {
+  background: var(--navy-pale) !important;
+}
+.table thead th {
+  color: var(--navy) !important;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: none !important;
+  padding: 0.9rem 1rem;
+  border-bottom: 2px solid var(--orange) !important;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--grey-light) !important;
+  transition: background 0.15s;
+  background: var(--white);
+}
+.table tbody tr:hover {
+  background: var(--navy-pale) !important;
+}
+
+.table td {
+  border: none !important;
   vertical-align: middle;
+  padding: 0.8rem 1rem;
+  color: var(--text);
 }
 
-.account-img {
-  height: 125px;
-  width: 125px;
-  margin-right: 20px;
-  margin-bottom: 16px;
+.table-light { background: var(--off-white) !important; }
+
+/* ── Story/subtask rows (backlog) ── */
+tr.story-row { background: var(--white) !important; }
+tr.story-row:hover { background: var(--navy-pale) !important; }
+tr.subtask-row { background: var(--off-white) !important; }
+tr.story-row.dragging { background: var(--orange-light) !important; opacity: 0.6; }
+tr.story-row.drag-over { box-shadow: 0 -3px 0 0 var(--orange) inset !important; }
+tr.story-row.drag-over-below { box-shadow: 0 3px 0 0 var(--orange) inset !important; }
+
+.drag-handle { color: var(--grey-mid) !important; }
+tr.story-row:hover .drag-handle { color: var(--navy) !important; }
+
+/* ── Table footer ── */
+[style*="background:#fafbfc"],
+[style*="background: #fafbfc"] {
+  background: var(--navy-pale) !important;
 }
 
-.account-heading {
-  font-size: 2.5rem;
+/* ============================================================
+   BADGES
+   ============================================================ */
+.badge {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  padding: 0.35em 0.75em;
+  border-radius: 4px;
+}
+.badge.bg-primary   { background: var(--navy) !important; color: var(--white) !important; }
+.badge.bg-secondary { background: var(--grey-light) !important; color: var(--grey-dark) !important; border: 1px solid var(--border); }
+.badge.bg-success   { background: #388e3c !important; color: var(--white) !important; }
+.badge.bg-danger    { background: var(--arc-red) !important; color: var(--white) !important; }
+.badge.bg-warning   { background: var(--orange) !important; color: var(--white) !important; }
+.badge.bg-info      { background: var(--navy-light) !important; color: var(--navy) !important; border: 1px solid var(--border); }
+.badge.bg-dark      { background: var(--navy) !important; color: var(--white) !important; }
+.badge.bg-light     { background: var(--grey-light) !important; color: var(--grey-dark) !important; border: 1px solid var(--border) !important; }
+.badge.rounded-pill { border-radius: 50px !important; }
+
+/* ── Epic color badges ── */
+.badge[style*="background-color"] {
+  color: #fff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
+/* ============================================================
+   FORMS
+   ============================================================ */
+.form-control, .form-select {
+  background: var(--white) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  color: var(--text) !important;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  padding: 0.55rem 0.85rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--navy-mid) !important;
+  box-shadow: 0 0 0 3px rgba(26,58,107,0.12) !important;
+  background: var(--white) !important;
+  color: var(--text) !important;
+  outline: none;
+}
+.form-control::placeholder { color: var(--grey-mid) !important; }
+.form-select option { background: var(--white); color: var(--text); }
+
+.form-label {
+  color: var(--navy);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+textarea.form-control { min-height: 100px; resize: vertical; }
+
+/* ── Crispy forms ── */
+.asteriskField { color: var(--orange); }
+.invalid-feedback { color: var(--arc-red); font-size: 0.8rem; }
+.is-invalid { border-color: var(--arc-red) !important; }
+
+/* ── Flatpickr light override ── */
+.flatpickr-calendar {
+  background: var(--white) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-md) !important;
+  border-radius: var(--radius) !important;
+}
+.flatpickr-day { color: var(--text) !important; border-radius: var(--radius) !important; }
+.flatpickr-day:hover { background: var(--navy-light) !important; color: var(--navy) !important; }
+.flatpickr-day.selected { background: var(--navy) !important; color: var(--white) !important; border-color: var(--navy) !important; font-weight: 700; }
+.flatpickr-months, .flatpickr-weekdays { background: var(--navy-pale) !important; }
+.flatpickr-month, .flatpickr-weekday { color: var(--navy) !important; fill: var(--navy) !important; }
+.flatpickr-prev-month svg, .flatpickr-next-month svg { fill: var(--navy) !important; }
+
+/* ============================================================
+   TYPOGRAPHY HELPERS
+   ============================================================ */
+.text-muted   { color: var(--grey-mid) !important; }
+.text-dark    { color: var(--text) !important; }
+.text-primary { color: var(--navy) !important; }
+.text-danger  { color: var(--arc-red) !important; }
+.text-warning { color: var(--orange) !important; }
+.text-success { color: #388e3c !important; }
+
+.fw-bold     { font-weight: 700 !important; }
+.fw-semibold { font-weight: 600 !important; }
+
+h2.fw-bold { font-size: 1.7rem; }
+
+/* ── Key/code display ── */
+code.text-primary {
+  color: var(--navy) !important;
+  background: var(--navy-light);
+  font-weight: 700;
+  font-size: 0.85rem !important;
+}
+
+/* ── Avatar circles ── */
+.rounded-circle.bg-primary {
+  background: var(--navy) !important;
+  color: var(--white) !important;
+  font-weight: 700;
+}
+
+/* ── Dashboard label ── */
+.text-uppercase.fw-semibold.text-primary.small {
+  color: var(--orange) !important;
+  letter-spacing: 0.1em;
+  font-size: 0.7rem !important;
+}
+
+/* ── Priority icons ── */
+.text-danger.fw-semibold  { color: var(--arc-red) !important; }
+.text-warning.fw-semibold { color: var(--orange) !important; }
+.text-secondary.fw-semibold { color: var(--grey-mid) !important; }
+
+/* ============================================================
+   PROJECT LAYOUT & SIDEBAR
+   ============================================================ */
 .project-layout {
   display: flex;
-  min-height: calc(100vh - 78px);
+  min-height: calc(100vh - 74px);
 }
 
 .project-layout-sidebar {
   width: 260px;
   min-width: 260px;
-  background: #ffffff;
-  border-right: 1px solid #dee2e6;
+  background: var(--white);
+  border-right: 1px solid var(--border);
   flex-shrink: 0;
 }
 
-.project-layout-content {
-  flex: 1;
-  min-width: 0;
-}
+.project-layout-content { flex: 1; min-width: 0; }
 
 .project-sidebar {
-  min-height: calc(100vh - 78px);
+  min-height: calc(100vh - 74px);
+  background: var(--white);
 }
+
+.project-sidebar h5 {
+  color: var(--navy);
+  font-family: var(--font-display);
+}
+.project-sidebar small { color: var(--grey-mid); }
+.project-sidebar .border-bottom { border-color: var(--border) !important; }
 
 .project-sidebar .nav-link {
-  display: block;
-  transition: background-color 0.2s ease;
+  color: var(--grey-dark) !important;
+  font-weight: 500;
+  font-size: 0.88rem;
+  border-radius: var(--radius);
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+}
+.project-sidebar .nav-link:hover {
+  background: var(--navy-pale) !important;
+  color: var(--navy) !important;
+  border-left-color: var(--orange);
+}
+.project-sidebar .nav-link.active {
+  background: var(--navy-pale) !important;
+  color: var(--navy) !important;
+  border-left-color: var(--navy);
+  font-weight: 700;
 }
 
-.project-sidebar .nav-link:hover {
-  background-color: #f1f3f5;
+/* ============================================================
+   KANBAN BOARD
+   ============================================================ */
+.kanban-col {
+  background: var(--off-white) !important;
+  border-radius: 0 0 var(--radius) var(--radius);
+  min-height: 350px;
+  transition: background 0.2s;
 }
+.kanban-col[style*="background: rgb(233, 236, 239)"] {
+  background: var(--navy-light) !important;
+}
+
+.ticket-card {
+  background: var(--white) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  transition: all 0.2s;
+  cursor: grab;
+}
+.ticket-card:hover {
+  border-color: var(--orange) !important;
+  box-shadow: 0 3px 12px rgba(244,121,32,0.15) !important;
+  transform: translateY(-1px);
+}
+.ticket-card:active { cursor: grabbing; }
+
+/* ============================================================
+   EPIC CARDS (colored left border)
+   ============================================================ */
+.card[style*="border-left"] {
+  border-left-width: 5px !important;
+}
+
+/* ============================================================
+   COLOR SWATCHES (epic form)
+   ============================================================ */
+.color-swatch { border-color: var(--border) !important; }
+.color-swatch:hover { transform: scale(1.2); }
+#preview-label { color: var(--grey-mid); }
+#preview-hex   { color: var(--navy); background: var(--navy-light); }
+
+/* ============================================================
+   DELETE CONFIRM CARDS
+   ============================================================ */
+.card-body.text-center h4.text-danger {
+  color: var(--arc-red) !important;
+  font-family: var(--font-display);
+}
+
+/* ============================================================
+   BORDERS & HELPERS
+   ============================================================ */
+.border        { border-color: var(--border) !important; }
+.border-bottom { border-color: var(--border) !important; }
+.border-top    { border-color: var(--border) !important; }
+.border-end    { border-color: var(--border) !important; }
+
+.shadow-sm { box-shadow: var(--shadow-sm) !important; }
+.rounded-4 { border-radius: var(--radius-lg) !important; }
+.rounded-3 { border-radius: var(--radius) !important; }
+
+.overflow-hidden { overflow: hidden !important; }
+.bg-white  { background: var(--white) !important; }
+.bg-light  { background: var(--off-white) !important; }
+
+/* ── Input group ── */
+.input-group-text {
+  background: var(--off-white);
+  border-color: var(--border);
+  color: var(--grey-dark);
+}
+
+/* ── Navbar toggler (mobile) ── */
+.navbar-toggler { border-color: rgba(255,255,255,0.3) !important; }
+.navbar-toggler-icon { filter: invert(1); }
+
+/* ── Navbar icons : profil & déconnexion ── */
+.navbar .nav-link.text-secondary { color: rgba(255,255,255,0.75) !important; }
+.navbar .nav-link.text-secondary:hover { color: var(--white) !important; }
+.navbar .btn-link { color: rgba(255,255,255,0.75) !important; }
+.navbar .btn-link:hover { color: #ffb3b3 !important; }
+.navbar .bi-person-circle { color: rgba(255,255,255,0.85); font-size: 1.3rem; }
+.navbar .bi-box-arrow-right { color: rgba(255,255,255,0.75); font-size: 1.15rem; }
+.navbar a[href*="profile"] { color: rgba(255,255,255,0.85) !important; }
+.navbar a[href*="profile"]:hover { color: var(--white) !important; }
+
+/* ── Fix textes invisibles blanc sur blanc ── */
+.table td a { color: var(--navy) !important; }
+.table td a:hover { color: var(--orange) !important; }
+.table td a.text-dark { color: var(--text) !important; }
+.table td a.text-dark:hover { color: var(--orange) !important; }
+
+/* ── Sprint tickets list ── */
+.card-body a.text-decoration-none.text-dark { color: var(--text) !important; }
+.card-body a.text-decoration-none.text-dark:hover { color: var(--orange) !important; }
+
+/* ── Ticket cards (kanban) ── */
+.ticket-card a { color: var(--text) !important; }
+.ticket-card a:hover { color: var(--orange) !important; }
+.ticket-card .text-muted { color: var(--grey-mid) !important; }
+
+/* ── Project list links ── */
+a.text-decoration-none.text-dark { color: var(--text) !important; }
+a.text-decoration-none.text-dark:hover { color: var(--orange) !important; }
+
+/* ── Sidebar active sprint link ── */
+.project-sidebar .nav-link.text-muted { color: var(--grey-mid) !important; }
+
+/* ── Alert links ── */
+.alert a { color: var(--navy) !important; font-weight: 600; }
+.alert a:hover { color: var(--orange) !important; }
+
+/* ── Post detail metadata boxes ── */
+.border.rounded-4.p-3 { background: var(--white) !important; }
+.border.rounded-4.p-3 small { color: var(--grey-mid) !important; }
+.border.rounded-4.p-3 strong { color: var(--navy) !important; }
+.border.rounded-4.p-3 strong a { color: var(--navy) !important; }
+
+/* ── Backlog subtask link ── */
+.subtask-row a { color: var(--text) !important; }
+.subtask-row a:hover { color: var(--orange) !important; }
+
+/* ── Sprint goal small text ── */
+.card .card-body small { color: var(--grey-dark) !important; }
+
+/* ── Members badges ── */
+.badge.rounded-pill.bg-danger  { background: var(--arc-red) !important; color: var(--white) !important; }
+.badge.rounded-pill.bg-success { background: #388e3c !important; color: var(--white) !important; }
+.badge.rounded-pill.bg-secondary { background: var(--grey-dark) !important; color: var(--white) !important; }
+
+/* ── Sprint header card ── */
+.card-header.bg-white { background: var(--navy-pale) !important; }
+.card-header.bg-white strong { color: var(--navy) !important; }
+.card-header.bg-white .text-muted { color: var(--grey-mid) !important; }
+  background: var(--navy-pale) !important;
+  color: var(--text) !important;
+}
+
+/* ── Sprint status badges in card headers ── */
+.card-header .badge.bg-success { background: #388e3c !important; }
+.card-header .badge.bg-secondary { background: var(--grey-mid) !important; color: var(--white) !important; }
+.card-header .badge.bg-dark { background: var(--navy) !important; }
+
+/* ── Backlog table ── */
+#backlog-table .drag-handle { color: var(--grey-mid); }
+#backlog-table .drag-handle:hover { color: var(--navy); }
+
+/* ── Navbar icon links ── */
+.nav-link .bi { font-size: 1.15rem; }
+.bi { vertical-align: -0.125em; }
+
+/* ============================================================
+   ACCENT — orange bar under navbar (HELB signature)
+   ============================================================ */
+body::before {
+  content: '';
+  display: block;
+  position: fixed;
+  top: 74px;
+  left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    var(--arc-red)    0%,
+    var(--orange)     25%,
+    #4caf50           50%,
+    var(--navy-mid)   75%,
+    var(--arc-purple) 100%
+  );
+  z-index: 999;
+}
+
+/* ============================================================
+   ANIMATIONS — subtiles, professionnelles
+   ============================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card { animation: fadeIn 0.25s ease both; }
+
+.table tbody tr { animation: fadeIn 0.2s ease both; }
+.table tbody tr:nth-child(1)  { animation-delay: 0.03s; }
+.table tbody tr:nth-child(2)  { animation-delay: 0.06s; }
+.table tbody tr:nth-child(3)  { animation-delay: 0.09s; }
+.table tbody tr:nth-child(4)  { animation-delay: 0.12s; }
+.table tbody tr:nth-child(5)  { animation-delay: 0.15s; }
+.table tbody tr:nth-child(n+6) { animation-delay: 0.18s; }
