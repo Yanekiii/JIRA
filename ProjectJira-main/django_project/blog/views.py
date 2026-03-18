@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from .models import Ticket, Project, Sprint, Epic, ProjectMembership
+from django.db.models import Case, When, Value, IntegerField
 
 
 # ── Helper ────────────────────────────────────────────────────────────────────
@@ -178,7 +179,15 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         project = self.get_object()
-        sprints = project.sprints.all().prefetch_related('tickets')
+
+        sprints = project.sprints.prefetch_related('tickets').annotate(
+            active_first=Case(
+                When(status='active', then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            )
+        ).order_by('active_first', '-created_at')
+
         context['sprints'] = sprints
         context['epics'] = project.epics.all()
         context['members'] = project.memberships.select_related('user')

@@ -61,6 +61,7 @@ class Sprint(models.Model):
     end_date        = models.DateField()
     status          = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planned')
     global_capacity = models.PositiveIntegerField(null=True, blank=True)
+    created_at      = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.project.code} — {self.name}"
