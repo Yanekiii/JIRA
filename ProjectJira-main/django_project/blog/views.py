@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from .models import Ticket, Project, Sprint, Epic, ProjectMembership
 from django.db.models import Case, When, Value, IntegerField
+from datetime import timedelta
 
 
 # ── Helper ────────────────────────────────────────────────────────────────────
@@ -67,13 +68,29 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
     template_name = 'blog/post_form.html'
 
     def form_valid(self, form):
-        project = form.cleaned_data.get('project')
+        project_pk = self.kwargs.get('project_pk')
+
+        if project_pk:
+            project = get_object_or_404(Project, pk=project_pk)
+            form.instance.project = project
+        else:
+            project = form.cleaned_data.get('project')
+
         role = get_user_role(self.request.user, project)
         if role not in ['admin', 'contributor']:
             messages.error(self.request, "You don't have permission to create tickets in this project.")
             return redirect('project-detail', pk=project.pk)
+
         form.instance.reporter = self.request.user
         return super().form_valid(form)
+    
+    def get_initial(self):
+        project_pk = self.kwargs.get('project_pk')
+        if project_pk:
+            return {
+                'project': project_pk
+            }
+        return super().get_initial()
 
 
 class TicketUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -202,6 +219,11 @@ class ProjectCreateView(AdminRequiredMixin, CreateView):
               'sprint_duration', 'workload_unit', 'capacity']
     template_name = 'blog/project_form.html'
 
+    def get_initial(self):
+        return {
+            'sprint_duration': 14
+    }
+
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         return super().form_valid(form)
@@ -280,11 +302,18 @@ def manage_members(request, project_pk):
 # ── Sprints ───────────────────────────────────────────────────────────────────
 class SprintCreateView(AdminRequiredMixin, CreateView):
     model = Sprint
-    fields = ['name', 'goal', 'start_date', 'end_date', 'global_capacity']
+    fields = ['name', 'goal', 'start_date', 'global_capacity']
     template_name = 'blog/sprint_form.html'
 
     def form_valid(self, form):
-        form.instance.project = get_object_or_404(Project, pk=self.kwargs['project_pk'])
+        project = get_object_or_404(Project, pk=self.kwargs['project_pk'])
+        form.instance.project = project
+
+        start = form.cleaned_data['start_date']
+        duration = int(self.request.POST.get('sprint_duration', project.sprint_duration))
+
+        form.instance.end_date = start + timedelta(days=duration)
+
         return super().form_valid(form)
 
 

@@ -32,7 +32,8 @@ urlpatterns = [
     path('project/<int:pk>/epics/', views.project_epics, name='project-epics'),
     path('project/<int:project_pk>/members/', views.manage_members, name='manage-members'),
     path('project/<int:project_id>/backlog/reorder/', views.backlog_reorder, name='backlog-reorder'),
-
+    path('project/<int:project_pk>/ticket/new/', TicketCreateView.as_view(), name='ticket-create'),
+    
     # Sprints
     path('project/<int:project_pk>/sprint/new/', SprintCreateView.as_view(), name='sprint-create'),
     path('sprint/<int:pk>/update/', SprintUpdateView.as_view(), name='sprint-update'),

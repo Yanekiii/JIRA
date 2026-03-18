@@ -84,7 +84,7 @@
           <a href="{% url 'epic-create' project.id %}" class="btn btn-outline-info btn-sm rounded-pill">
             + New Epic
           </a>
-          <a href="{% url 'ticket-create' %}" class="btn btn-primary btn-sm rounded-pill">
+          <a href="{% url 'ticket-create' project.pk %}" class="btn btn-warning">
             + New Ticket
           </a>
         {% endif %}
