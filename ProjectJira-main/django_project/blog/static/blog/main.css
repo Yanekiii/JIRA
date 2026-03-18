@@ -13,6 +13,7 @@
   --navy-mid:    #1f4580;
   --navy-light:  #e8eef7;
   --navy-pale:   #f0f4fb;
+  --helb-blue:   #29abe2;
   --orange:      #f47920;
   --orange-dark: #d4651a;
   --orange-light: rgba(244, 121, 32, 0.1);
@@ -81,8 +82,8 @@ nav.navbar,
 .navbar.navbar-expand-lg,
 .navbar.bg-white,
 .navbar-light.bg-white {
-  background-color: var(--navy) !important;
-  background: var(--navy) !important;
+  background-color: var(--helb-blue) !important;
+  background: var(--helb-blue) !important;
   border-bottom: 3px solid var(--orange) !important;
   padding: 0.6rem 0 !important;
   box-shadow: 0 2px 12px rgba(26,58,107,0.2) !important;
@@ -125,11 +126,11 @@ nav.navbar .bi,
 }
 nav.navbar form button,
 nav.navbar .btn-link {
-  color: rgba(255,255,255,0.8) !important;
+  color: #ff6b6b !important;
 }
 nav.navbar form button:hover,
 nav.navbar .btn-link:hover {
-  color: #ffb3b3 !important;
+  color: #ff3333 !important;
 }
 nav.navbar a[href*="profile"],
 nav.navbar a.nav-link[title="Profile"] {
@@ -158,13 +159,15 @@ nav.navbar a[href*="profile"]:hover {
 .btn-primary:active { transform: translateY(0); }
 
 .btn-outline-success {
+  background: #4caf50;
   border-color: #4caf50;
-  color: #4caf50;
+  color: var(--white);
   font-weight: 600;
   transition: all 0.2s;
 }
 .btn-outline-success:hover {
-  background: #4caf50;
+  background: #388e3c;
+  border-color: #388e3c;
   color: var(--white);
 }
 
@@ -420,6 +423,54 @@ tr.story-row:hover .drag-handle { color: var(--navy) !important; }
 .form-control::placeholder { color: var(--grey-mid) !important; }
 .form-select option { background: var(--white); color: var(--text); }
 
+/* ── SELECT simple : une seule flèche, pas de repeat ── */
+select.form-select:not([multiple]),
+select.form-control:not([multiple]),
+select:not([multiple]) {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-color: var(--white) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231a3a6b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 18px 18px !important;
+  padding-right: 2.5rem !important;
+  cursor: pointer !important;
+}
+
+select.form-select:not([multiple]):hover,
+select.form-control:not([multiple]):hover,
+select:not([multiple]):hover {
+  border-color: var(--navy-mid) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23f47920' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-color: var(--white) !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 18px 18px !important;
+}
+
+select.form-select:not([multiple]):focus,
+select.form-control:not([multiple]):focus,
+select:not([multiple]):focus {
+  border-color: var(--navy-mid) !important;
+  box-shadow: 0 0 0 3px rgba(26,58,107,0.12) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231f4580' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-color: var(--white) !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 18px 18px !important;
+}
+
+/* ── SELECT multiple : pas de flèche (géré par le widget JS) ── */
+select[multiple] {
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  background-image: none !important;
+  padding-right: 0.85rem !important;
+  cursor: default !important;
+}
+
 .form-label {
   color: var(--navy);
   font-size: 0.82rem;
@@ -622,10 +673,10 @@ code.text-primary {
 /* ── Navbar icons : profil & déconnexion ── */
 .navbar .nav-link.text-secondary { color: rgba(255,255,255,0.75) !important; }
 .navbar .nav-link.text-secondary:hover { color: var(--white) !important; }
-.navbar .btn-link { color: rgba(255,255,255,0.75) !important; }
-.navbar .btn-link:hover { color: #ffb3b3 !important; }
+.navbar .btn-link { color: #ff6b6b !important; }
+.navbar .btn-link:hover { color: #ff3333 !important; }
 .navbar .bi-person-circle { color: rgba(255,255,255,0.85); font-size: 1.3rem; }
-.navbar .bi-box-arrow-right { color: rgba(255,255,255,0.75); font-size: 1.15rem; }
+.navbar .bi-box-arrow-right { color: #ff6b6b !important; font-size: 1.15rem; }
 .navbar a[href*="profile"] { color: rgba(255,255,255,0.85) !important; }
 .navbar a[href*="profile"]:hover { color: var(--white) !important; }
 
@@ -731,3 +782,196 @@ body::before {
 .table tbody tr:nth-child(4)  { animation-delay: 0.12s; }
 .table tbody tr:nth-child(5)  { animation-delay: 0.15s; }
 .table tbody tr:nth-child(n+6) { animation-delay: 0.18s; }
+
+/* ============================================================
+   MULTISELECT DROPDOWN — Remplacement des <select multiple>
+   ============================================================ */
+.ms-wrapper {
+  position: relative;
+  width: 100%;
+  font-family: var(--font-body);
+}
+
+/* ── Bouton déclencheur ── */
+.ms-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 42px;
+  padding: 0.45rem 0.85rem;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  user-select: none;
+}
+.ms-trigger:hover {
+  border-color: var(--navy-mid);
+}
+.ms-trigger.open {
+  border-color: var(--navy-mid);
+  box-shadow: 0 0 0 3px rgba(26,58,107,0.12);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* ── Pills des items sélectionnés ── */
+.ms-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+}
+.ms-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--navy-light);
+  color: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ms-pill-remove {
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  color: var(--grey-mid);
+  margin-left: 2px;
+  transition: color 0.15s;
+}
+.ms-pill-remove:hover { color: var(--arc-red); }
+
+.ms-placeholder {
+  color: var(--grey-mid);
+  font-size: 0.9rem;
+}
+
+/* ── Flèche ── */
+.ms-arrow {
+  flex-shrink: 0;
+  color: var(--grey-mid);
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+}
+.ms-trigger.open .ms-arrow {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown panel ── */
+.ms-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0; right: 0;
+  background: var(--white);
+  border: 1px solid var(--navy-mid);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: var(--shadow-md);
+  z-index: 1050;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.ms-dropdown.open { display: block; }
+
+/* ── Barre de recherche dans le dropdown ── */
+.ms-search {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--white);
+  z-index: 1;
+}
+.ms-search input {
+  width: 100%;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  padding: 5px 10px !important;
+  font-size: 0.85rem !important;
+  color: var(--text) !important;
+  background: var(--off-white) !important;
+  outline: none;
+}
+.ms-search input:focus {
+  border-color: var(--navy-mid) !important;
+  box-shadow: none !important;
+}
+
+/* ── Items ── */
+.ms-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text);
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--grey-light);
+}
+.ms-option:last-child { border-bottom: none; }
+.ms-option:hover { background: var(--navy-pale); }
+.ms-option.selected { background: var(--navy-pale); }
+
+/* ── Checkbox custom ── */
+.ms-check {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  background: var(--white);
+}
+.ms-option.selected .ms-check,
+.ms-option:hover .ms-check {
+  border-color: var(--navy);
+}
+.ms-option.selected .ms-check {
+  background: var(--navy);
+  border-color: var(--navy);
+}
+.ms-check::after {
+  content: '';
+  display: none;
+  width: 5px;
+  height: 9px;
+  border: 2px solid var(--white);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+.ms-option.selected .ms-check::after { display: block; }
+
+/* ── Label option ── */
+.ms-option-label { flex: 1; }
+
+/* ── Compteur sélectionnés ── */
+.ms-count {
+  font-size: 0.75rem;
+  color: var(--grey-mid);
+  background: var(--grey-light);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-weight: 600;
+}
+.ms-option.selected .ms-count { background: var(--navy-light); color: var(--navy); }
+
+/* ── Empty state ── */
+.ms-empty {
+  padding: 14px;
+  text-align: center;
+  color: var(--grey-mid);
+  font-size: 0.85rem;
+  font-style: italic;
+}
