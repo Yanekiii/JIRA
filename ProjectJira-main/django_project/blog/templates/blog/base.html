@@ -19,7 +19,15 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top border-bottom">
     <div class="container-fluid px-4">
-      <a class="navbar-brand fw-bold text-primary me-4" href="{% url 'blog-home' %}">BENYS</a>
+
+      <!-- ── Brand : BENYS + séparateur + logo client ── -->
+      <a class="navbar-brand fw-bold text-primary me-4 d-flex align-items-center gap-3" href="{% url 'blog-home' %}">
+        BENYS
+        <span style="width:1px; height:28px; background:rgba(255,255,255,0.3); display:inline-block; flex-shrink:0;"></span>
+       <img src="/media/logo_client.png"
+             alt="HELB Ilya Prigogine"
+             style="height:42px; width:auto; object-fit:contain;">
+      </a>
 
       <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -100,147 +108,5 @@
       });
     });
   </script>
-  <!-- ═══════════════════════════════════════════════════════════
-     MULTISELECT DROPDOWN — à coller dans base.html
-     juste avant </body>
-     ═══════════════════════════════════════════════════════════ -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-  // Cible tous les <select multiple> de la page
-  document.querySelectorAll('select[multiple]').forEach(initMultiSelect);
-
-  function initMultiSelect(select) {
-    // Masquer le select natif
-    select.style.display = 'none';
-
-    // ── Récupérer les options ──
-    const options = [...select.options];
-    const placeholder = select.dataset.placeholder || 'Sélectionner…';
-
-    // ── Créer le wrapper ──
-    const wrapper = document.createElement('div');
-    wrapper.className = 'ms-wrapper';
-    select.parentNode.insertBefore(wrapper, select);
-    wrapper.appendChild(select);
-
-    // ── Créer le bouton déclencheur ──
-    const trigger = document.createElement('div');
-    trigger.className = 'ms-trigger';
-    trigger.innerHTML = `
-      <div class="ms-pills"></div>
-      <span class="ms-arrow">▼</span>
-    `;
-    wrapper.insertBefore(trigger, select);
-
-    // ── Créer le dropdown ──
-    const dropdown = document.createElement('div');
-    dropdown.className = 'ms-dropdown';
-    dropdown.innerHTML = `
-      <div class="ms-search"><input type="text" placeholder="Rechercher…"></div>
-      <div class="ms-list"></div>
-    `;
-    wrapper.appendChild(dropdown);
-
-    const pillsContainer = trigger.querySelector('.ms-pills');
-    const searchInput    = dropdown.querySelector('.ms-search input');
-    const list           = dropdown.querySelector('.ms-list');
-
-    // ── Construire les items ──
-    function buildList(filter = '') {
-      list.innerHTML = '';
-      const filtered = options.filter(o =>
-        o.text.toLowerCase().includes(filter.toLowerCase())
-      );
-
-      if (filtered.length === 0) {
-        list.innerHTML = '<div class="ms-empty">Aucun résultat</div>';
-        return;
-      }
-
-      filtered.forEach(opt => {
-        const item = document.createElement('div');
-        item.className = 'ms-option' + (opt.selected ? ' selected' : '');
-        item.dataset.value = opt.value;
-        item.innerHTML = `
-          <div class="ms-check"></div>
-          <span class="ms-option-label">${opt.text}</span>
-        `;
-        item.addEventListener('click', () => toggleOption(opt, item));
-        list.appendChild(item);
-      });
-    }
-
-    // ── Toggle sélection ──
-    function toggleOption(opt, item) {
-      opt.selected = !opt.selected;
-      item.classList.toggle('selected', opt.selected);
-      renderPills();
-      // Déclencher l'événement change pour Django/crispy
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-
-    // ── Afficher les pills ──
-    function renderPills() {
-      pillsContainer.innerHTML = '';
-      const selected = options.filter(o => o.selected);
-
-      if (selected.length === 0) {
-        pillsContainer.innerHTML = `<span class="ms-placeholder">${placeholder}</span>`;
-        return;
-      }
-
-      selected.forEach(opt => {
-        const pill = document.createElement('span');
-        pill.className = 'ms-pill';
-        pill.innerHTML = `
-          ${opt.text}
-          <span class="ms-pill-remove" data-value="${opt.value}" title="Retirer">✕</span>
-        `;
-        pill.querySelector('.ms-pill-remove').addEventListener('click', e => {
-          e.stopPropagation();
-          opt.selected = false;
-          renderPills();
-          buildList(searchInput.value);
-          select.dispatchEvent(new Event('change', { bubbles: true }));
-        });
-        pillsContainer.appendChild(pill);
-      });
-    }
-
-    // ── Ouvrir / fermer ──
-    function openDropdown() {
-      trigger.classList.add('open');
-      dropdown.classList.add('open');
-      searchInput.value = '';
-      buildList();
-      searchInput.focus();
-    }
-
-    function closeDropdown() {
-      trigger.classList.remove('open');
-      dropdown.classList.remove('open');
-    }
-
-    trigger.addEventListener('click', e => {
-      if (e.target.closest('.ms-pill-remove')) return;
-      dropdown.classList.contains('open') ? closeDropdown() : openDropdown();
-    });
-
-    // ── Recherche ──
-    searchInput.addEventListener('input', () => buildList(searchInput.value));
-
-    // ── Fermer en cliquant ailleurs ──
-    document.addEventListener('click', e => {
-      if (!wrapper.contains(e.target)) closeDropdown();
-    });
-
-    // ── Init ──
-    renderPills();
-    buildList();
-  }
-
-});
-</script>
 </body>
 </html>
