@@ -41,27 +41,31 @@
           </div>
 
           <div class="navbar-nav ms-auto d-flex align-items-lg-center gap-lg-2">
+  
             <a class="btn btn-primary btn-sm rounded-pill px-3" href="{% url 'ticket-create' %}">+ New Ticket</a>
 
             {% if user.is_staff %}
               <a class="btn btn-outline-success btn-sm rounded-pill px-3" href="{% url 'project-create' %}">+ New Project</a>
+
+              
+              <a href="{% url 'admin:index' %}" class="btn btn-outline-dark btn-sm rounded-pill px-3">Admin</a>
             {% endif %}
 
-            <a class="nav-link text-secondary fs-5" href="{% url 'profile' %}" title="Profile" aria-label="Profile">
+            <a class="nav-link text-secondary fs-5" href="{% url 'profile' %}" title="Profile">
               <i class="bi bi-person-circle"></i>
             </a>
 
             <form method="POST" action="{% url 'logout' %}" class="d-inline m-0">
               {% csrf_token %}
               <button type="submit" class="btn btn-link nav-link text-danger p-0 text-decoration-none d-flex align-items-center gap-1">
-              <i class="bi bi-box-arrow-right"></i>
+                <i class="bi bi-box-arrow-right"></i>
               </button>
             </form>
+
           </div>
         {% else %}
           <div class="navbar-nav ms-auto d-flex align-items-lg-center gap-lg-2">
             <a class="nav-link text-dark" href="{% url 'login' %}">Login</a>
-            <a class="btn btn-outline-primary btn-sm rounded-pill px-3" href="{% url 'register' %}">Sign Up</a>
           </div>
         {% endif %}
       </div>
