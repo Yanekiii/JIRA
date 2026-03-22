@@ -60,7 +60,7 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
     fields = [
         'ticket_type', 'title', 'description',
         'project', 'epic', 'parent_ticket',
-        'sprint', 'priority', 'status',
+        'sprint', 'priority',          
         'demandeur', 'assignee',
         'start_date', 'end_date',
         'workload_initial',
@@ -83,14 +83,14 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
 
         form.instance.reporter = self.request.user
         return super().form_valid(form)
-    
+
     def get_initial(self):
+        initial = super().get_initial()
         project_pk = self.kwargs.get('project_pk')
         if project_pk:
-            return {
-                'project': project_pk
-            }
-        return super().get_initial()
+            initial['project'] = project_pk
+        initial['demandeur'] = self.request.user
+        return initial
 
 
 class TicketUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -98,7 +98,7 @@ class TicketUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     fields = [
         'ticket_type', 'title', 'description',
         'project', 'epic', 'parent_ticket',
-        'sprint', 'priority', 'status',
+        'sprint', 'priority', 'status',   
         'demandeur', 'assignee',
         'start_date', 'end_date',
         'workload_initial', 'workload_remaining', 'workload_done',
@@ -220,9 +220,7 @@ class ProjectCreateView(AdminRequiredMixin, CreateView):
     template_name = 'blog/project_form.html'
 
     def get_initial(self):
-        return {
-            'sprint_duration': 14
-    }
+        return {'sprint_duration': 14}
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
@@ -308,12 +306,9 @@ class SprintCreateView(AdminRequiredMixin, CreateView):
     def form_valid(self, form):
         project = get_object_or_404(Project, pk=self.kwargs['project_pk'])
         form.instance.project = project
-
         start = form.cleaned_data['start_date']
         duration = int(self.request.POST.get('sprint_duration', project.sprint_duration))
-
         form.instance.end_date = start + timedelta(days=duration)
-
         return super().form_valid(form)
 
 
@@ -391,7 +386,7 @@ def project_epics(request, pk):
 # ── Epics ─────────────────────────────────────────────────────────────────────
 class EpicCreateView(AdminRequiredMixin, CreateView):
     model = Epic
-    fields = ['title', 'description', 'status', 'priority', 'color', 'start_date', 'end_date']
+    fields = ['title', 'description', 'priority', 'color', 'start_date', 'end_date']
     template_name = 'blog/epic_form.html'
 
     def form_valid(self, form):
