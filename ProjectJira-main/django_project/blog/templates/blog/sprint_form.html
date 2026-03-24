@@ -69,7 +69,7 @@
                   {% if project %}
                   <small class="text-muted mt-1 d-block">
                     <i class="bi bi-magic me-1"></i>
-                    La date de fin sera calculée automatiquement ({{ project.sprint_duration }} jour{{ project.sprint_duration|pluralize }})
+                    The end date will be calculated automatically ({{ project.sprint_duration }} day {{ project.sprint_duration|pluralize }})
                   </small>
                   {% endif %}
                 </div>
@@ -86,9 +86,7 @@
 
                   <div class="col-md-4">
                     <label class="form-label fw-semibold">End Date</label>
-                    <div class="border rounded-3 px-3 py-2 bg-light" id="end-date-display">
-                      Calculée automatiquement
-                    </div>
+                    <input type="text" class="form-control bg-light" id="end-date-display" readonly>
                   </div>
 
                 <div class="col-md-4">
@@ -119,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const duration = parseInt(durationEl.value);
 
     if (!startVal || !duration) {
-      endDisplay.textContent = "Calculée automatiquement";
+      endDisplay.value = "";
       return;
     }
 
@@ -131,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const mm = String(end.getMonth() + 1).padStart(2, '0');
     const dd = String(end.getDate()).padStart(2, '0');
 
-    endDisplay.textContent = `${yyyy}-${mm}-${dd}`;
+    endDisplay.value = `${yyyy}-${mm}-${dd}`;
   }
 
   if (startEl) {

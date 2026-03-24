@@ -102,7 +102,11 @@
           </div>
           <div class="card-body px-4 pb-4">
             <div class="row g-3">
-              <div class="col-md-4">{{ form.project|as_crispy_field }}</div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Project</label>
+                <input type="text" class="form-control" value="{{ project }}" readonly>
+              </div>
+              <!--<div class="col-md-4">{{ form.project|as_crispy_field }}</div>-->
               <div class="col-md-4">{{ form.epic|as_crispy_field }}</div>
               <div class="col-md-4">{{ form.sprint|as_crispy_field }}</div>
               <div class="col-12">{{ form.parent_ticket|as_crispy_field }}</div>
@@ -174,8 +178,8 @@
           </div>
           <div class="card-body px-4 pb-4">
             <div class="row g-3">
-              <div class="col-12">{{ form.demandeur|as_crispy_field }}</div>
-              <div class="col-12">{{ form.assignee|as_crispy_field }}</div>
+              <div class="col-12">{{ form.requester|as_crispy_field }}</div>
+              <div class="col-12">{{ form.assigned|as_crispy_field }}</div>
             </div>
           </div>
         </div>

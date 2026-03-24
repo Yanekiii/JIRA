@@ -61,7 +61,7 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
         'ticket_type', 'title', 'description',
         'project', 'epic', 'parent_ticket',
         'sprint', 'priority', 'status',
-        'demandeur', 'assignee',
+        'requester', 'assigned',
         'start_date', 'end_date',
         'workload_initial',
     ]
@@ -91,6 +91,13 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
                 'project': project_pk
             }
         return super().get_initial()
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project_pk = self.kwargs.get('project_pk')
+        if project_pk:
+            context['project'] = get_object_or_404(Project, pk=project_pk)
+        return context
 
 
 class TicketUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -99,7 +106,7 @@ class TicketUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         'ticket_type', 'title', 'description',
         'project', 'epic', 'parent_ticket',
         'sprint', 'priority', 'status',
-        'demandeur', 'assignee',
+        'requester', 'assigned',
         'start_date', 'end_date',
         'workload_initial', 'workload_remaining', 'workload_done',
     ]

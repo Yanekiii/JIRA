@@ -148,14 +148,14 @@ class Ticket(models.Model):
     )
 
     # Requester: manually selected in the form
-    demandeur = models.ForeignKey(
+    requester = models.ForeignKey(
         User, on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='requested_tickets',
         verbose_name="Requester"
     )
 
-    assignee = models.ForeignKey(
+    assigned = models.ForeignKey(
         User, on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='assigned_tickets',
