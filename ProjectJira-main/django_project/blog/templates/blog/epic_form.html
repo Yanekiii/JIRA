@@ -14,11 +14,7 @@
             <div>
               <p class="text-uppercase text-muted small fw-semibold mb-1">Epic</p>
               <h2 class="mb-0 fw-bold">
-                {% if form.instance.pk %}
-                  Edit Epic
-                {% else %}
-                  Create New Epic
-                {% endif %}
+                {% if form.instance.pk %}Edit Epic{% else %}Create New Epic{% endif %}
               </h2>
             </div>
 
@@ -43,9 +39,11 @@
             <div class="mb-4">
               <h5 class="fw-bold mb-3">Epic Information</h5>
               <div class="row g-3">
-                <div class="col-md-6">{{ form.title|as_crispy_field }}</div>
-                <div class="col-md-6">{{ form.status|as_crispy_field }}</div>
+                <div class="col-12">{{ form.title|as_crispy_field }}</div>
                 <div class="col-12">{{ form.description|as_crispy_field }}</div>
+                {% if form.instance.pk %}
+                <div class="col-md-6">{{ form.status|as_crispy_field }}</div>
+                {% endif %}
               </div>
             </div>
 
@@ -54,17 +52,17 @@
               <h5 class="fw-bold mb-3">Planning</h5>
               <div class="row g-3">
 
+                <!-- 2) priority = select Low/Medium/High -->
                 <div class="col-md-4">{{ form.priority|as_crispy_field }}</div>
                 <div class="col-md-4">{{ form.start_date|as_crispy_field }}</div>
                 <div class="col-md-4">{{ form.end_date|as_crispy_field }}</div>
 
                 <!-- ── Color Wheel ── -->
                 <div class="col-12 col-md-8">
-                  <label class="form-label fw-semibold">Couleur de l'Epic</label>
+                  <label class="form-label fw-semibold">Epic Color</label>
 
                   <div class="color-picker-wrapper">
 
-                    <!-- Roue des teintes -->
                     <div class="color-picker-left">
                       <div class="color-wheel-container">
                         <canvas id="colorWheel" width="180" height="180"></canvas>
@@ -72,28 +70,20 @@
                       </div>
                     </div>
 
-                    <!-- Curseur de luminosité + aperçu -->
                     <div class="color-picker-right">
-
-                      <!-- Slider luminosité -->
-                      <div class="brightness-label">Luminosité</div>
+                      <div class="brightness-label">Brightness</div>
                       <div class="brightness-track-wrap">
                         <canvas id="brightnessSlider" width="24" height="160"></canvas>
                         <div id="brightnessCursor" class="brightness-cursor"></div>
                       </div>
-
-                      <!-- Aperçu + nom -->
                       <div class="color-preview-block">
                         <div id="colorPreviewCircle" class="color-preview-circle"></div>
-                        <span id="colorPreviewName" class="color-preview-name">Choisissez</span>
+                        <span id="colorPreviewName" class="color-preview-name">Choose</span>
                       </div>
-
                     </div>
                   </div>
 
-                  <!-- Champ caché envoyé au backend -->
                   {{ form.color }}
-
                 </div>
 
               </div>
@@ -108,7 +98,6 @@
 </div>
 
 <style>
-/* ── Color Picker Layout ── */
 .color-picker-wrapper {
   display: flex;
   align-items: flex-start;
@@ -119,114 +108,67 @@
   border-radius: 12px;
   width: fit-content;
 }
-
 .color-picker-left { position: relative; flex-shrink: 0; }
-
 .color-wheel-container {
   position: relative;
-  width: 180px;
-  height: 180px;
+  width: 180px; height: 180px;
   cursor: crosshair;
   border-radius: 50%;
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
 }
-
 #colorWheel { display: block; border-radius: 50%; }
-
 .wheel-cursor {
   position: absolute;
-  width: 14px;
-  height: 14px;
+  width: 14px; height: 14px;
   border: 2.5px solid #fff;
   border-radius: 50%;
   box-shadow: 0 0 0 1.5px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3);
   transform: translate(-50%, -50%);
   pointer-events: none;
-  top: 50%;
-  left: 50%;
+  top: 50%; left: 50%;
   transition: box-shadow 0.1s;
 }
-
-/* ── Right panel ── */
 .color-picker-right {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding-top: 4px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 10px; padding-top: 4px;
 }
-
 .brightness-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #7a9ab8;
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em; color: #7a9ab8;
 }
-
 .brightness-track-wrap {
-  position: relative;
-  width: 24px;
-  height: 160px;
-  cursor: ns-resize;
-  border-radius: 12px;
-  overflow: hidden;
+  position: relative; width: 24px; height: 160px;
+  cursor: ns-resize; border-radius: 12px; overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
-
 #brightnessSlider { display: block; border-radius: 12px; }
-
 .brightness-cursor {
-  position: absolute;
-  left: 50%;
-  width: 20px;
-  height: 8px;
-  background: #fff;
-  border-radius: 4px;
+  position: absolute; left: 50%;
+  width: 20px; height: 8px;
+  background: #fff; border-radius: 4px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.35);
   transform: translate(-50%, -50%);
-  pointer-events: none;
-  top: 0;
-  transition: top 0.05s;
+  pointer-events: none; top: 0; transition: top 0.05s;
 }
-
-/* ── Preview ── */
 .color-preview-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 6px; margin-top: 4px;
 }
-
 .color-preview-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 40px; height: 40px; border-radius: 50%;
   border: 2.5px solid #fff;
   box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  background: #3498db;
-  transition: background 0.15s;
+  background: #3498db; transition: background 0.15s;
 }
-
 .color-preview-name {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #495057;
-  text-align: center;
-  max-width: 70px;
-  word-break: break-all;
+  font-size: 0.75rem; font-weight: 600; color: #495057;
+  text-align: center; max-width: 70px; word-break: break-all;
 }
-
-/* Masquer le champ texte du hex — le client n'a pas besoin de le voir */
-#id_color {
-  display: none !important;
-}
+#id_color { display: none !important; }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-
   const wheelCanvas      = document.getElementById('colorWheel');
   const brightnessCanvas = document.getElementById('brightnessSlider');
   const wheelCursor      = document.getElementById('wheelCursor');
@@ -235,48 +177,34 @@ document.addEventListener('DOMContentLoaded', function () {
   const previewName      = document.getElementById('colorPreviewName');
   const colorInput       = document.getElementById('id_color');
 
-  const WR = wheelCanvas.width;   // 180
-  const WH = wheelCanvas.height;  // 180
+  const WR = wheelCanvas.width, WH = wheelCanvas.height;
   const cx = WR / 2, cy = WH / 2, radius = WR / 2 - 2;
 
-  let currentHue = 210;       // teinte initiale (bleu)
-  let currentSat = 0.65;      // saturation
-  let currentBri = 1.0;       // luminosité (1 = plein, 0 = noir)
-  let isDraggingWheel = false;
-  let isDraggingBri   = false;
+  let currentHue = 210, currentSat = 0.65, currentBri = 1.0;
+  let isDraggingWheel = false, isDraggingBri = false;
 
-  // ── Dessiner la roue de couleurs ────────────────────────────
   function drawWheel() {
     const ctx = wheelCanvas.getContext('2d');
     const imageData = ctx.createImageData(WR, WH);
     const data = imageData.data;
-
     for (let y = 0; y < WH; y++) {
       for (let x = 0; x < WR; x++) {
         const dx = x - cx, dy = y - cy;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > radius) { continue; }
-
+        if (dist > radius) continue;
         const hue = ((Math.atan2(dy, dx) * 180 / Math.PI) + 360) % 360;
         const sat = dist / radius;
         const [r, g, b] = hslToRgb(hue, sat, 0.5);
-
         const i = (y * WR + x) * 4;
-        data[i]     = r;
-        data[i + 1] = g;
-        data[i + 2] = b;
-        data[i + 3] = 255;
+        data[i] = r; data[i+1] = g; data[i+2] = b; data[i+3] = 255;
       }
     }
     ctx.putImageData(imageData, 0, 0);
   }
 
-  // ── Dessiner le slider de luminosité ────────────────────────
   function drawBrightness() {
     const ctx = brightnessCanvas.getContext('2d');
-    const W = brightnessCanvas.width;
-    const H = brightnessCanvas.height;
-
+    const W = brightnessCanvas.width, H = brightnessCanvas.height;
     const grad = ctx.createLinearGradient(0, 0, 0, H);
     grad.addColorStop(0,   `hsl(${currentHue}, ${currentSat * 100}%, 100%)`);
     grad.addColorStop(0.5, `hsl(${currentHue}, ${currentSat * 100}%, 50%)`);
@@ -285,63 +213,37 @@ document.addEventListener('DOMContentLoaded', function () {
     ctx.fillRect(0, 0, W, H);
   }
 
-  // ── Positionner le curseur de la roue ───────────────────────
   function updateWheelCursor() {
     const angle = currentHue * Math.PI / 180;
     const r = currentSat * radius;
-    const x = cx + r * Math.cos(angle);
-    const y = cy + r * Math.sin(angle);
-    wheelCursor.style.left = x + 'px';
-    wheelCursor.style.top  = y + 'px';
+    wheelCursor.style.left = (cx + r * Math.cos(angle)) + 'px';
+    wheelCursor.style.top  = (cy + r * Math.sin(angle)) + 'px';
   }
 
-  // ── Positionner le curseur de luminosité ────────────────────
   function updateBrightnessCursor() {
-    const H = brightnessCanvas.height;
-    // bri=1 → top=0, bri=0 → top=H
-    const y = (1 - currentBri) * H;
-    brightCursor.style.top = y + 'px';
+    brightCursor.style.top = ((1 - currentBri) * brightnessCanvas.height) + 'px';
   }
 
-  // ── Mettre à jour la couleur finale ─────────────────────────
   function updateColor() {
-    // Convertir HSL → hex
-    const lightness = currentBri * 50;   // 0–50%
-    const [r, g, b] = hslToRgb(currentHue, currentSat, lightness / 100);
+    const [r, g, b] = hslToRgb(currentHue, currentSat, currentBri * 50 / 100);
     const hex = rgbToHex(r, g, b);
-
     previewCircle.style.background = hex;
     previewName.textContent = colorName(currentHue, currentSat, currentBri);
     if (colorInput) colorInput.value = hex;
-
     drawBrightness();
     updateBrightnessCursor();
   }
 
-  // ── Clic / drag sur la roue ──────────────────────────────────
   function pickFromWheel(e) {
     const rect = wheelCanvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    const x = clientX - rect.left - cx;
-    const y = clientY - rect.top  - cy;
-    const dist = Math.sqrt(x * x + y * y);
-
+    const x = clientX - rect.left - cx, y = clientY - rect.top - cy;
     currentHue = ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
-    currentSat = Math.min(dist / radius, 1);
-
-    updateWheelCursor();
-    updateColor();
+    currentSat = Math.min(Math.sqrt(x*x+y*y) / radius, 1);
+    updateWheelCursor(); updateColor();
   }
 
-  wheelCanvas.addEventListener('mousedown',  e => { isDraggingWheel = true; pickFromWheel(e); });
-  wheelCanvas.addEventListener('touchstart', e => { isDraggingWheel = true; pickFromWheel(e); e.preventDefault(); }, { passive: false });
-  document.addEventListener('mousemove',  e => { if (isDraggingWheel) pickFromWheel(e); });
-  document.addEventListener('touchmove',  e => { if (isDraggingWheel) { pickFromWheel(e); e.preventDefault(); } }, { passive: false });
-  document.addEventListener('mouseup',   () => { isDraggingWheel = false; });
-  document.addEventListener('touchend',  () => { isDraggingWheel = false; });
-
-  // ── Clic / drag sur le slider de luminosité ─────────────────
   function pickBrightness(e) {
     const rect = brightnessCanvas.getBoundingClientRect();
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -350,115 +252,86 @@ document.addEventListener('DOMContentLoaded', function () {
     updateColor();
   }
 
+  wheelCanvas.addEventListener('mousedown',  e => { isDraggingWheel = true; pickFromWheel(e); });
+  wheelCanvas.addEventListener('touchstart', e => { isDraggingWheel = true; pickFromWheel(e); e.preventDefault(); }, { passive: false });
+  document.addEventListener('mousemove',  e => { if (isDraggingWheel) pickFromWheel(e); if (isDraggingBri) pickBrightness(e); });
+  document.addEventListener('mouseup',   () => { isDraggingWheel = false; isDraggingBri = false; });
+  document.addEventListener('touchend',  () => { isDraggingWheel = false; isDraggingBri = false; });
   brightnessCanvas.addEventListener('mousedown',  e => { isDraggingBri = true; pickBrightness(e); });
   brightnessCanvas.addEventListener('touchstart', e => { isDraggingBri = true; pickBrightness(e); e.preventDefault(); }, { passive: false });
-  document.addEventListener('mousemove',  e => { if (isDraggingBri) pickBrightness(e); });
-  document.addEventListener('touchmove',  e => { if (isDraggingBri) { pickBrightness(e); e.preventDefault(); } }, { passive: false });
-  document.addEventListener('mouseup',   () => { isDraggingBri = false; });
-  document.addEventListener('touchend',  () => { isDraggingBri = false; });
 
-  // ── Initialisation avec valeur existante (mode édition) ─────
-  function initFromHex(hex) {
-    if (!hex || !hex.startsWith('#')) return;
-    const [r, g, b] = hexToRgb(hex);
-    const [h, s, l] = rgbToHsl(r, g, b);
-    currentHue = h;
-    currentSat = s;
-    currentBri = l / 50;   // l est en 0–50% → normaliser à 0–1
-    updateWheelCursor();
-    updateColor();
-  }
-
-  // ── Utilitaires couleur ──────────────────────────────────────
   function hslToRgb(h, s, l) {
-    h = h / 360; s = s; l = l;
+    h /= 360;
     let r, g, b;
     if (s === 0) { r = g = b = l; }
     else {
       const hue2rgb = (p, q, t) => {
         if (t < 0) t += 1; if (t > 1) t -= 1;
-        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/6) return p + (q-p)*6*t;
         if (t < 1/2) return q;
-        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        if (t < 2/3) return p + (q-p)*(2/3-t)*6;
         return p;
       };
-      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      const p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1/3);
-      g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1/3);
+      const q = l < 0.5 ? l*(1+s) : l+s-l*s, p = 2*l-q;
+      r = hue2rgb(p, q, h+1/3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h-1/3);
     }
-    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
   }
 
   function rgbToHsl(r, g, b) {
     r /= 255; g /= 255; b /= 255;
-    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-    let h, s, l = (max + min) / 2;
+    const max = Math.max(r,g,b), min = Math.min(r,g,b);
+    let h, s, l = (max+min)/2;
     if (max === min) { h = s = 0; }
     else {
       const d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      switch (max) {
-        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-        case g: h = ((b - r) / d + 2) / 6; break;
-        case b: h = ((r - g) / d + 4) / 6; break;
+      s = l > 0.5 ? d/(2-max-min) : d/(max+min);
+      switch(max) {
+        case r: h = ((g-b)/d + (g<b?6:0))/6; break;
+        case g: h = ((b-r)/d + 2)/6; break;
+        case b: h = ((r-g)/d + 4)/6; break;
       }
     }
-    return [h * 360, s, l * 100];
+    return [h*360, s, l*100];
   }
 
   function rgbToHex(r, g, b) {
-    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+    return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
   }
 
   function hexToRgb(hex) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return [r, g, b];
+    return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
   }
 
-  // ── Noms de couleurs simples (sans hex) ──────────────────────
   function colorName(h, s, bri) {
-    if (s < 0.1) return bri > 0.8 ? 'Blanc' : bri < 0.2 ? 'Noir' : 'Gris';
-    if (bri < 0.15) return 'Très sombre';
-    if (bri > 0.92) return 'Très clair';
-    const names = [
-      [0,   'Rouge'],
-      [30,  'Orange'],
-      [60,  'Jaune'],
-      [90,  'Jaune-vert'],
-      [120, 'Vert'],
-      [150, 'Vert menthe'],
-      [180, 'Cyan'],
-      [210, 'Bleu ciel'],
-      [240, 'Bleu'],
-      [270, 'Violet'],
-      [300, 'Magenta'],
-      [330, 'Rose'],
-      [360, 'Rouge'],
-    ];
-    let closest = names[0];
-    let minDiff = 360;
+    if (s < 0.1) return bri > 0.8 ? 'White' : bri < 0.2 ? 'Black' : 'Gray';
+    if (bri < 0.15) return 'Very dark';
+    if (bri > 0.92) return 'Very light';
+    const names = [[0,'Red'],[30,'Orange'],[60,'Yellow'],[90,'Yellow-green'],
+      [120,'Green'],[150,'Mint'],[180,'Cyan'],[210,'Sky blue'],
+      [240,'Blue'],[270,'Violet'],[300,'Magenta'],[330,'Pink'],[360,'Red']];
+    let closest = names[0], minDiff = 360;
     for (const [angle, name] of names) {
       const diff = Math.abs(h - angle);
       if (diff < minDiff) { minDiff = diff; closest = [angle, name]; }
     }
-    const prefix = bri < 0.4 ? 'Foncé · ' : bri > 0.75 ? 'Clair · ' : '';
-    return prefix + closest[1];
+    return (bri < 0.4 ? 'Dark · ' : bri > 0.75 ? 'Light · ' : '') + closest[1];
   }
 
-  // ── Lancer ───────────────────────────────────────────────────
-  drawWheel();
-  drawBrightness();
+  function initFromHex(hex) {
+    if (!hex || !hex.startsWith('#')) return;
+    const [r, g, b] = hexToRgb(hex);
+    const [h, s, l] = rgbToHsl(r, g, b);
+    currentHue = h; currentSat = s; currentBri = l / 50;
+    updateWheelCursor(); updateColor();
+  }
 
+  drawWheel(); drawBrightness();
   const existingColor = colorInput ? colorInput.value : '';
   if (existingColor && existingColor.startsWith('#')) {
     initFromHex(existingColor);
   } else {
-    updateWheelCursor();
-    updateColor();
+    updateWheelCursor(); updateColor();
   }
 });
 </script>

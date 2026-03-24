@@ -70,7 +70,6 @@ class Sprint(models.Model):
         return reverse('project-detail', kwargs={'pk': self.project.pk})
 
     def save(self, *args, **kwargs):
-        # Only one active sprint per project at a time
         if self.status == 'active':
             Sprint.objects.filter(
                 project=self.project, status='active'
@@ -84,11 +83,17 @@ class Epic(models.Model):
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     ]
+
+    PRIORITY_CHOICES = [
+        ('low',    'Low'),
+        ('medium', 'Medium'),
+        ('high',   'High'),
+    ]
     project     = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='epics')
     title       = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
-    priority    = models.PositiveIntegerField(default=0)
+    priority    = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
     color       = models.CharField(max_length=7, default='#6366f1')
     start_date  = models.DateField(null=True, blank=True)
     end_date    = models.DateField(null=True, blank=True)
@@ -124,7 +129,6 @@ class Ticket(models.Model):
     ticket_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='story')
     epic        = models.ForeignKey(Epic, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets')
 
-    # Task → parent User Story
     parent_ticket = models.ForeignKey(
         'self',
         on_delete=models.SET_NULL,
@@ -138,9 +142,9 @@ class Ticket(models.Model):
     title       = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+
     priority    = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
 
-    # Reporter: auto-filled from request.user in the view
     reporter = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='reported_tickets',
@@ -156,6 +160,7 @@ class Ticket(models.Model):
     )
 
     assigned = models.ForeignKey(
+
         User, on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='assigned_tickets',
@@ -165,7 +170,6 @@ class Ticket(models.Model):
     start_date = models.DateField(null=True, blank=True)
     end_date   = models.DateField(null=True, blank=True)
 
-    # Workload: user types an integer (story points, man-days, or man-hours)
     workload_initial   = models.PositiveIntegerField(null=True, blank=True, verbose_name="Initial Workload")
     workload_remaining = models.PositiveIntegerField(null=True, blank=True, verbose_name="Remaining Workload")
     workload_done      = models.PositiveIntegerField(default=0, verbose_name="Workload Done")
@@ -180,14 +184,12 @@ class Ticket(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.number = self.project.next_ticket_number()
-            # workload_remaining defaults to workload_initial on creation
             if self.workload_initial and self.workload_remaining is None:
                 self.workload_remaining = self.workload_initial
         super().save(*args, **kwargs)
 
     @property
     def human_id(self):
-        """Returns e.g. PROJ-42"""
         return f"{self.project.code}-{self.number}"
 
     def __str__(self):
