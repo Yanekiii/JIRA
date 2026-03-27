@@ -31,7 +31,7 @@
           {% endif %}
         </div>
 
-        <p class="text-muted mt-3 mb-0">{{ project.description }}</p>
+        <p class="text-muted mt-3 mb-0">{{ project.description|safe }}</p>
 
         <!-- Team Members — aperçu simple -->
         <div class="card border-0 shadow-sm rounded-4 mb-4 mt-4">
@@ -122,7 +122,7 @@
 
               {% if sprint.goal %}
                 <div class="card-body pt-2 pb-2">
-                  <small class="text-muted">{{ sprint.goal }}</small>
+                  <small class="text-muted">{{ sprint.goal|safe }}</small>
                 </div>
               {% endif %}
 

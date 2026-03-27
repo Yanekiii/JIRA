@@ -134,7 +134,7 @@ class Ticket(models.Model):
         on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='subtasks',
-        verbose_name="Parent User Story",
+        verbose_name="Linked to",
         limit_choices_to={'ticket_type': 'story'}
     )
 

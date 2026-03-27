@@ -29,7 +29,16 @@ def about(request):
     return render(request, 'blog/about.html', {'title': 'About'})
 
 def home(request):
-    return render(request, 'blog/home.html', {'tickets': Ticket.objects.all()})
+    if not request.user.is_authenticated:
+        return render(request, 'blog/home.html')
+    
+    projects = Project.objects.filter(memberships__user=request.user) | Project.objects.filter(created_by=request.user)
+    my_tickets = Ticket.objects.filter(assignee=request.user).exclude(status__in=['closed', 'cancelled'])
+    
+    return render(request, 'blog/home.html', {
+        'projects': projects.distinct(),
+        'my_tickets': my_tickets
+    })
 
 def kanban_board(request):
     return render(request, 'blog/kanban.html', {
@@ -62,10 +71,16 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
         'project', 'epic', 'parent_ticket',
         'sprint', 'priority',          
         'demandeur', 'assignee',
-        'start_date', 'end_date',
         'workload_initial',
     ]
     template_name = 'blog/post_form.html'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if not self.request.user.is_staff and not self.request.user.is_superuser:
+            if 'demandeur' in form.fields:
+                del form.fields['demandeur']
+        return form
 
     def form_valid(self, form):
         project_pk = self.kwargs.get('project_pk')
@@ -82,6 +97,9 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
             return redirect('project-detail', pk=project.pk)
 
         form.instance.reporter = self.request.user
+        if not self.request.user.is_staff and not self.request.user.is_superuser:
+            form.instance.demandeur = self.request.user
+
         return super().form_valid(form)
 
     def get_initial(self):
@@ -89,7 +107,6 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
         project_pk = self.kwargs.get('project_pk')
         if project_pk:
             initial['project'] = project_pk
-        initial['demandeur'] = self.request.user
         return initial
 
 
@@ -100,10 +117,16 @@ class TicketUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         'project', 'epic', 'parent_ticket',
         'sprint', 'priority', 'status',   
         'demandeur', 'assignee',
-        'start_date', 'end_date',
         'workload_initial', 'workload_remaining', 'workload_done',
     ]
     template_name = 'blog/post_form.html'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if not self.request.user.is_staff and not self.request.user.is_superuser:
+            if 'demandeur' in form.fields:
+                del form.fields['demandeur']
+        return form
 
     def test_func(self):
         ticket = self.get_object()

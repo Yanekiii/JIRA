@@ -32,9 +32,10 @@
 
             {% if project.description %}
             <p class="text-muted mb-2">
-              {{ project.description|truncatewords:20 }}
+              {{ project.description|truncatewords_html:20|safe }}
             </p>
             {% endif %}
+            
 
             <div class="text-muted small">
 

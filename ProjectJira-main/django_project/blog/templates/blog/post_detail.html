@@ -41,7 +41,7 @@
           <div class="mb-4">
             <h2 class="fw-bold mb-2">{{ object.title }}</h2>
             <p class="text-muted mb-0">
-              {% if object.description %}{{ object.description }}{% else %}No description provided.{% endif %}
+              {% if object.description %}{{ object.description|safe }}{% else %}No description provided.{% endif %}
             </p>
           </div>
 

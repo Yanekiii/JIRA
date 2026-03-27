@@ -8,7 +8,7 @@ from .views import (
 from . import views
 
 urlpatterns = [
-    path('', TicketListView.as_view(), name='blog-home'),
+    path('', views.home, name='blog-home'),
     path('about/', views.about, name='blog-about'),
     path('kanban/', views.kanban_board, name='kanban-board'),
 
