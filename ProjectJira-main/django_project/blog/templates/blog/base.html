@@ -20,7 +20,6 @@
   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top border-bottom">
     <div class="container-fluid px-4">
 
-      <!-- ── Brand : BENYS + séparateur + logo client ── -->
       <a class="navbar-brand fw-bold text-primary me-4 d-flex align-items-center gap-3" href="{% url 'blog-home' %}">
         BENYS
         <span style="width:1px; height:28px; background:rgba(255,255,255,0.3); display:inline-block; flex-shrink:0;"></span>
@@ -89,23 +88,32 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      // Configuration TinyMCE (WYSIWYG)
+      tinymce.init({
+        selector: 'textarea',
+        menubar: false,
+        plugins: 'lists link',
+        toolbar: 'bold italic underline | bullist numlist | link',
+        height: 200,
+        statusbar: false
+      });
+
+      // Configuration Flatpickr
       const opts = { dateFormat: "Y-m-d", allowInput: true, locale: { firstDayOfWeek: 1 } };
 
-      // 1. Tous les input[type="date"]
       document.querySelectorAll('input[type="date"]').forEach(el => {
         if (!el._flatpickr) flatpickr(el, opts);
       });
 
-      // 2. Tous les inputs dont le name ou l'id contient "date"
       document.querySelectorAll('input[type="text"]').forEach(el => {
         if (!el._flatpickr && (el.name || '').toLowerCase().includes('date')) {
           flatpickr(el, opts);
         }
       });
 
-      // 3. Ciblage direct par id au cas où crispy génère des noms spéciaux
       ['id_date_created','id_date_updated'].forEach(id => {
         const el = document.getElementById(id);
         if (el && !el._flatpickr) flatpickr(el, opts);

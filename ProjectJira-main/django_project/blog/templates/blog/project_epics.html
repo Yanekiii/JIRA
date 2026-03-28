@@ -27,8 +27,8 @@
               {% if epic.start_date %}
                 <small class="text-muted ms-2">{{ epic.start_date }} → {{ epic.end_date }}</small>
               {% endif %}
-              {% if epic.description %}
-                <p class="text-muted mb-0 mt-1 small">{{ epic.description }}</p>
+              {{ epic.description|safe }}
+                <p class="text-muted mb-0 mt-1 small">{{ epic.description|safe }}</p>
               {% endif %}
             </div>
             {% if user.is_staff %}

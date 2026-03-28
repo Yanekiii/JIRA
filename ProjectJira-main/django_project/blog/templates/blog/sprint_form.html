@@ -69,6 +69,7 @@
                   {% if project %}
                   <small class="text-muted mt-1 d-block">
                     <i class="bi bi-magic me-1"></i>
+
                     The end date will be calculated automatically ({{ project.sprint_duration }} day {{ project.sprint_duration|pluralize }})
                   </small>
                   {% endif %}
@@ -86,6 +87,7 @@
 
                   <div class="col-md-4">
                     <label class="form-label fw-semibold">End Date</label>
+
                     <input type="text" class="form-control bg-light" id="end-date-display" readonly>
                   </div>
 
