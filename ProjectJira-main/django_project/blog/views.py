@@ -69,8 +69,9 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
     fields = [
         'ticket_type', 'title', 'description',
         'project', 'epic', 'parent_ticket',
-        'sprint', 'priority',          
-        'demandeur', 'assignee',
+        'sprint', 'priority', 'status',
+        'requester', 'assigned',
+        'start_date', 'end_date',
         'workload_initial',
     ]
     template_name = 'blog/post_form.html'
@@ -106,17 +107,26 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
         initial = super().get_initial()
         project_pk = self.kwargs.get('project_pk')
         if project_pk:
-            initial['project'] = project_pk
-        return initial
-
+            return {
+                'project': project_pk
+            }
+        return super().get_initial()
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project_pk = self.kwargs.get('project_pk')
+        if project_pk:
+            context['project'] = get_object_or_404(Project, pk=project_pk)
+        return context
 
 class TicketUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Ticket
     fields = [
         'ticket_type', 'title', 'description',
         'project', 'epic', 'parent_ticket',
-        'sprint', 'priority', 'status',   
-        'demandeur', 'assignee',
+        'sprint', 'priority', 'status',
+        'requester', 'assigned',
+        'start_date', 'end_date',
         'workload_initial', 'workload_remaining', 'workload_done',
     ]
     template_name = 'blog/post_form.html'
