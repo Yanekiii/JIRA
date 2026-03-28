@@ -159,7 +159,7 @@
               {% else %}
               <div class="col-12">
               {% endif %}
-                {{ form.assignee|as_crispy_field }}
+                {{ form.assigned|as_crispy_field }}
                 <small>
                   <a href="#" class="text-primary text-decoration-none" id="assign-to-me">
                     <i class="bi bi-person-check me-1"></i>Assign to me
@@ -220,10 +220,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 document.getElementById('assign-to-me').addEventListener('click', function(e) {
   e.preventDefault();
-  const assigneeSelect = document.getElementById('id_assignee');
+  const assignedSelect = document.getElementById('id_assigned');
   const currentUser = "{{ request.user.id }}";
-  if (assigneeSelect) {
-    assigneeSelect.value = currentUser;
+  if (assignedSelect) {
+    assignedSelect.value = currentUser;
   }
 });
 

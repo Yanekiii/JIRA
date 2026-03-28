@@ -33,7 +33,7 @@ def home(request):
         return render(request, 'blog/home.html')
     
     projects = Project.objects.filter(memberships__user=request.user) | Project.objects.filter(created_by=request.user)
-    my_tickets = Ticket.objects.filter(assignee=request.user).exclude(status__in=['closed', 'cancelled'])
+    my_tickets = Ticket.objects.filter(assigned=request.user).exclude(status__in=['closed', 'cancelled'])
     
     return render(request, 'blog/home.html', {
         'projects': projects.distinct(),

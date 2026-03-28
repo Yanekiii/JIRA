@@ -164,7 +164,7 @@ class Ticket(models.Model):
         User, on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name='assigned_tickets',
-        verbose_name="Assignee"
+        verbose_name="Assigned"
     )
 
     start_date = models.DateField(null=True, blank=True)
