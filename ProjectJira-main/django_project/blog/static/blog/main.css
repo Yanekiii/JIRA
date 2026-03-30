@@ -725,13 +725,18 @@ a.text-decoration-none.text-dark:hover { color: var(--orange) !important; }
 .badge.rounded-pill.bg-secondary { background: var(--grey-dark) !important; color: var(--white) !important; }
 
 /* ── Sprint header card ── */
-.card-header.bg-white { background: var(--navy-pale) !important; }
-.card-header.bg-white strong { color: var(--navy) !important; }
-.card-header.bg-white .text-muted { color: var(--grey-mid) !important; }
+.card-header.bg-white {
   background: var(--navy-pale) !important;
   color: var(--text) !important;
 }
 
+.card-header.bg-white strong {
+  color: var(--navy) !important;
+}
+
+.card-header.bg-white .text-muted {
+  color: var(--grey-mid) !important;
+}
 /* ── Sprint status badges in card headers ── */
 .card-header .badge.bg-success { background: #388e3c !important; }
 .card-header .badge.bg-secondary { background: var(--grey-mid) !important; color: var(--white) !important; }
