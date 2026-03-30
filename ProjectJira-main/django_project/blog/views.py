@@ -424,7 +424,7 @@ def project_epics(request, pk):
 
 
 # ── Epics ─────────────────────────────────────────────────────────────────────
-class EpicCreateView(AdminRequiredMixin, CreateView):
+class EpicCreateView(LoginRequiredMixin, CreateView):
     model = Epic
     fields = ['title', 'description', 'priority', 'color', 'start_date', 'end_date']
     template_name = 'blog/epic_form.html'
