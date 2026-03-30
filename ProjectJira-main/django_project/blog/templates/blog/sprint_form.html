@@ -56,7 +56,8 @@
                 {% endif %}
 
                 <div class="col-12">
-                  {{ form.goal|as_crispy_field }}
+                  <label class="form-label fw-bold">Goal</label>
+                  <textarea name="goal" id="id_goal" class="form-control wysiwyg">{{ form.goal.value|default:'' }}</textarea>
                 </div>
               </div>
             </div>

@@ -56,7 +56,8 @@
               </div>
 
               <div class="col-12">
-                {{ form.description|as_crispy_field }}
+                <label class="form-label fw-bold">Description</label>
+                <textarea name="description" id="id_description" class="form-control wysiwyg">{{ form.description.value|default:'' }}</textarea>
               </div>
 
               <div class="col-md-4">
