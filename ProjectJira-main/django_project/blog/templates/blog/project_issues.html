@@ -12,7 +12,7 @@
           <small class="text-muted">{{ project.name }} ({{ project.code }})</small>
         </div>
         {% if user_role == 'admin' or user_role == 'contributor' %}
-          <a href="{% url 'ticket-create' %}" class="btn btn-primary rounded-pill px-4">+ New Ticket</a>
+          <a href="{% url 'ticket-create' project.id %}" class="btn btn-primary rounded-pill px-4">+ New Ticket</a>
         {% endif %}
       </div>
 
