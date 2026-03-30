@@ -14,9 +14,9 @@
       </p>
       <h1 class="fw-bold mb-0" style="font-size:1.6rem;">
         {% if form.instance.pk %}
-          <i class="bi bi-pencil-square me-2 text-secondary"></i>Edit Ticket
+        <i class="bi bi-pencil-square me-2 text-secondary"></i>Edit Ticket
         {% else %}
-          <i class="bi bi-plus-circle me-2 text-primary"></i>Create New Ticket
+        <i class="bi bi-plus-circle me-2 text-primary"></i>Create New Ticket
         {% endif %}
       </h1>
     </div>
@@ -33,7 +33,7 @@
           <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
             <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
               <span class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
-                    style="width:28px;height:28px;font-size:0.75rem;">1</span>
+                style="width:28px;height:28px;font-size:0.75rem;">1</span>
               Basic Information
             </h5>
           </div>
@@ -65,7 +65,13 @@
               </div>
 
               <div class="col-12">{{ form.title|as_crispy_field }}</div>
-              <div class="col-12">{{ form.description|as_crispy_field }}</div>
+              <div class="col-12">
+                {% with form.description as field %}
+                {{ field.label_tag }}
+                <textarea name="description" id="id_description"
+                  class="form-control wysiwyg">{{ field.value|default:'' }}</textarea>
+                {% endwith %}
+              </div>
             </div>
           </div>
         </div>
@@ -74,13 +80,25 @@
           <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
             <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
               <span class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
-                    style="width:28px;height:28px;font-size:0.75rem;">2</span>
+                style="width:28px;height:28px;font-size:0.75rem;">2</span>
               Linked Items
             </h5>
           </div>
           <div class="card-body px-4 pb-4">
             <div class="row g-3">
-              <div class="col-md-4">{{ form.project|as_crispy_field }}</div>
+              <div class="col-md-4">
+                {% if project %}
+                {# Champ caché pour soumettre la valeur #}
+                <input type="hidden" name="project" value="{{ project.id }}">
+                {# Affichage lecture seule #}
+                <label class="form-label fw-bold">Project</label>
+                <div class="form-control bg-light text-muted" style="cursor:not-allowed;">
+                  {{ project.name }} <small class="text-secondary">({{ project.code }})</small>
+                </div>
+                {% else %}
+                {{ form.project|as_crispy_field }}
+                {% endif %}
+              </div>
               <div class="col-md-4">{{ form.epic|as_crispy_field }}</div>
               <div class="col-md-4">{{ form.sprint|as_crispy_field }}</div>
               <div class="col-12">{{ form.parent_ticket|as_crispy_field }}</div>
@@ -92,7 +110,7 @@
           <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
             <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
               <span class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
-                    style="width:28px;height:28px;font-size:0.75rem;">3</span>
+                style="width:28px;height:28px;font-size:0.75rem;">3</span>
               <i class="bi bi-hourglass-split me-1 text-muted"></i> Workload
             </h5>
           </div>
@@ -152,77 +170,127 @@
               {% if form.demandeur %}
               <div class="col-6">{{ form.demandeur|as_crispy_field }}</div>
               <div class="col-6">
-              {% else %}
-              <div class="col-12">
-              {% endif %}
-                {{ form.assignee|as_crispy_field }}
-                <small>
-                  <a href="#" class="text-primary text-decoration-none" id="assign-to-me">
-                    <i class="bi bi-person-check me-1"></i>Assign to me
-                  </a>
-                </small>
+                {% else %}
+                <div class="col-12">
+                  {% endif %}
+                  {{ form.assignee|as_crispy_field }}
+                  <small>
+                    <a href="#" class="text-primary text-decoration-none" id="assign-to-me">
+                      <i class="bi bi-person-check me-1"></i>Assign to me
+                    </a>
+                  </small>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
+        </div>
       </div>
-    </div>
   </form>
 
 </div>
 
 <style>
-.ticket-type-selector { display:flex; gap:12px; flex-wrap:wrap; }
-.ticket-type-card {
-  display:flex; flex-direction:column; align-items:center; gap:6px;
-  padding:16px 20px; border:2px solid #d0daea; border-radius:12px;
-  cursor:pointer; background:#fff; transition:all 0.2s;
-  min-width:120px; text-align:center; user-select:none;
-}
-.ticket-type-card:hover {
-  border-color:#1a3a6b; background:#f0f4fb;
-  transform:translateY(-2px); box-shadow:0 4px 14px rgba(26,58,107,0.12);
-}
-.ticket-type-card.active {
-  border-color:#1a3a6b; background:#e8eef7;
-  box-shadow:0 0 0 3px rgba(26,58,107,0.15);
-}
-.ticket-type-card[data-value="story"].active .ttc-icon { color:#1a3a6b; }
-.ticket-type-card[data-value="bug"].active   .ttc-icon { color:#e63329; }
-.ticket-type-card[data-value="task"].active  .ttc-icon { color:#388e3c; }
-.ticket-type-card[data-value="story"] .ttc-icon { color:#7a9ab8; }
-.ticket-type-card[data-value="bug"]   .ttc-icon { color:#e09090; }
-.ticket-type-card[data-value="task"]  .ttc-icon { color:#80b880; }
-.ttc-icon { font-size:1.8rem; line-height:1; transition:color 0.2s; }
-.ttc-label { font-weight:700; font-size:0.9rem; color:#2c3e50; }
-.ticket-type-card.active .ttc-label { color:#1a3a6b; }
+  .ticket-type-selector {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .ticket-type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 20px;
+    border: 2px solid #d0daea;
+    border-radius: 12px;
+    cursor: pointer;
+    background: #fff;
+    transition: all 0.2s;
+    min-width: 120px;
+    text-align: center;
+    user-select: none;
+  }
+
+  .ticket-type-card:hover {
+    border-color: #1a3a6b;
+    background: #f0f4fb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(26, 58, 107, 0.12);
+  }
+
+  .ticket-type-card.active {
+    border-color: #1a3a6b;
+    background: #e8eef7;
+    box-shadow: 0 0 0 3px rgba(26, 58, 107, 0.15);
+  }
+
+  .ticket-type-card[data-value="story"].active .ttc-icon {
+    color: #1a3a6b;
+  }
+
+  .ticket-type-card[data-value="bug"].active .ttc-icon {
+    color: #e63329;
+  }
+
+  .ticket-type-card[data-value="task"].active .ttc-icon {
+    color: #388e3c;
+  }
+
+  .ticket-type-card[data-value="story"] .ttc-icon {
+    color: #7a9ab8;
+  }
+
+  .ticket-type-card[data-value="bug"] .ttc-icon {
+    color: #e09090;
+  }
+
+  .ticket-type-card[data-value="task"] .ttc-icon {
+    color: #80b880;
+  }
+
+  .ttc-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .ttc-label {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #2c3e50;
+  }
+
+  .ticket-type-card.active .ttc-label {
+    color: #1a3a6b;
+  }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const cards       = document.querySelectorAll('.ticket-type-card');
-  const nativeSelect = document.getElementById('id_ticket_type');
+  document.addEventListener('DOMContentLoaded', function () {
+    const cards = document.querySelectorAll('.ticket-type-card');
+    const nativeSelect = document.getElementById('id_ticket_type');
 
-  function activateCard(value) {
-    cards.forEach(c => c.classList.toggle('active', c.dataset.value === value));
-    if (nativeSelect) nativeSelect.value = value;
-  }
+    function activateCard(value) {
+      cards.forEach(c => c.classList.toggle('active', c.dataset.value === value));
+      if (nativeSelect) nativeSelect.value = value;
+    }
 
-  cards.forEach(card => card.addEventListener('click', () => activateCard(card.dataset.value)));
+    cards.forEach(card => card.addEventListener('click', () => activateCard(card.dataset.value)));
 
-  const currentValue = nativeSelect ? nativeSelect.value : 'story';
-  activateCard(currentValue || 'story');
-});
+    const currentValue = nativeSelect ? nativeSelect.value : 'story';
+    activateCard(currentValue || 'story');
+  });
 
-document.getElementById('assign-to-me').addEventListener('click', function(e) {
-  e.preventDefault();
-  const assigneeSelect = document.getElementById('id_assignee');
-  const currentUser = "{{ request.user.id }}";
-  if (assigneeSelect) {
-    assigneeSelect.value = currentUser;
-  }
-});
+  document.getElementById('assign-to-me').addEventListener('click', function (e) {
+    e.preventDefault();
+    const assigneeSelect = document.getElementById('id_assignee');
+    const currentUser = "{{ request.user.id }}";
+    if (assigneeSelect) {
+      assigneeSelect.value = currentUser;
+    }
+  });
 
 </script>
 

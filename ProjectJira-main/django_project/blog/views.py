@@ -108,6 +108,13 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
         if project_pk:
             initial['project'] = project_pk
         return initial
+    
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        project_pk = self.kwargs.get('project_pk')
+        if project_pk:
+            ctx['project'] = get_object_or_404(Project, pk=project_pk)
+        return ctx
 
 
 class TicketUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -340,6 +347,14 @@ class SprintUpdateView(AdminRequiredMixin, UpdateView):
     fields = ['name', 'goal', 'start_date', 'end_date', 'status', 'global_capacity']
     template_name = 'blog/sprint_form.html'
 
+    def form_valid(self, form):
+        sprint = form.save()
+        return redirect('project-detail', pk=sprint.project.pk)
+
+    def form_invalid(self, form):
+        print("FORM ERRORS:", form.errors)
+        return super().form_invalid(form)
+
 
 class SprintDeleteView(AdminRequiredMixin, DeleteView):
     model = Sprint
@@ -351,7 +366,8 @@ class SprintDeleteView(AdminRequiredMixin, DeleteView):
 
 def sprint_start(request, pk):
     sprint = get_object_or_404(Sprint, pk=pk)
-    if request.user.is_staff and sprint.status == 'planned':
+    role = get_user_role(request.user, sprint.project)
+    if (request.user.is_staff or role == 'contributor') and sprint.status == 'planned':
         sprint.status = 'active'
         sprint.save()
         messages.success(request, f'Sprint "{sprint.name}" is now active!')
@@ -360,7 +376,8 @@ def sprint_start(request, pk):
 
 def sprint_close(request, pk):
     sprint = get_object_or_404(Sprint, pk=pk)
-    if request.user.is_staff and sprint.status == 'active':
+    role = get_user_role(request.user, sprint.project)
+    if (request.user.is_staff or role == 'contributor') and sprint.status == 'active':
         sprint.status = 'completed'
         sprint.save()
         Ticket.objects.filter(sprint=sprint).exclude(status='closed').update(sprint=None)
@@ -420,7 +437,7 @@ class EpicCreateView(AdminRequiredMixin, CreateView):
 
 class EpicUpdateView(AdminRequiredMixin, UpdateView):
     model = Epic
-    fields = ['title', 'description', 'status', 'priority', 'color', 'start_date', 'end_date']
+    fields = ['title', 'description', 'priority', 'color', 'start_date', 'end_date']
     template_name = 'blog/epic_form.html'
 
 

@@ -14,9 +14,9 @@
               <p class="text-uppercase text-muted small fw-semibold mb-1">Sprint</p>
               <h2 class="mb-0 fw-bold">
                 {% if form.instance.pk %}
-                  Edit Sprint
+                Edit Sprint
                 {% else %}
-                  Create New Sprint
+                Create New Sprint
                 {% endif %}
               </h2>
             </div>
@@ -28,9 +28,9 @@
 
               <button form="sprint-form" type="submit" class="btn btn-success rounded-pill px-4">
                 {% if form.instance.pk %}
-                  Save Changes
+                Save Changes
                 {% else %}
-                  Create Sprint
+                Create Sprint
                 {% endif %}
               </button>
             </div>
@@ -69,27 +69,25 @@
                   {% if project %}
                   <small class="text-muted mt-1 d-block">
                     <i class="bi bi-magic me-1"></i>
-                    End date will be calculated automatically ({{ project.sprint_duration }} day{{ project.sprint_duration|pluralize }})
+                    End date will be calculated automatically ({{ project.sprint_duration }} day{{
+                    project.sprint_duration|pluralize }})
                   </small>
                   {% endif %}
                 </div>
 
                 <div class="col-md-4">
                   <label class="form-label fw-semibold">Sprint Duration</label>
-                  <input type="number"
-                          id="duration-input"
-                          name="sprint_duration"
-                          class="form-control"
-                          value="{{ project.sprint_duration|default:14 }}"
-                          min="1">
-                  </div>
+                  <input type="number" id="duration-input" name="sprint_duration" class="form-control"
+                    value="{{ project.sprint_duration|default:14 }}" min="1">
+                </div>
 
-                  <div class="col-md-4">
-                    <label class="form-label fw-semibold">End Date</label>
-                    <div class="border rounded-3 px-3 py-2 bg-light" id="end-date-display">
-                      Calculated automatically
-                    </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">End Date</label>
+                  <div class="border rounded-3 px-3 py-2 bg-light" id="end-date-display">
+                    Calculated automatically
                   </div>
+                  <input type="hidden" name="end_date" id="end-date-hidden">
+                </div>
 
                 <div class="col-md-4">
                   {{ form.global_capacity|as_crispy_field }}
@@ -108,44 +106,55 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', function () {
 
-  const startEl = document.getElementById('id_start_date');
-  const durationEl = document.getElementById('duration-input');
-  const endDisplay = document.getElementById('end-date-display');
+    const startEl = document.getElementById('id_start_date');
+    const durationEl = document.getElementById('duration-input');
+    const endDisplay = document.getElementById('end-date-display');
 
-  function updateEndDate() {
-    const startVal = startEl.value;
-    const duration = parseInt(durationEl.value);
+    function updateEndDate() {
+      const startVal = startEl.value;
+      const duration = parseInt(durationEl.value);
+      const hiddenEnd = document.getElementById('end-date-hidden');
 
-    if (!startVal || !duration) {
-      endDisplay.textContent = "Calculated automatically";
-      return;
+      if (!startVal || !duration) {
+        endDisplay.textContent = "Calculated automatically";
+        if (hiddenEnd) hiddenEnd.value = '';
+        return;
+      }
+
+      const start = new Date(startVal);
+      const end = new Date(start);
+      end.setDate(end.getDate() + duration);
+
+      const yyyy = end.getFullYear();
+      const mm = String(end.getMonth() + 1).padStart(2, '0');
+      const dd = String(end.getDate()).padStart(2, '0');
+      const formatted = `${yyyy}-${mm}-${dd}`;
+
+      endDisplay.textContent = formatted;
+      if (hiddenEnd) hiddenEnd.value = formatted;
     }
 
-    const start = new Date(startVal);
-    const end = new Date(start);
-    end.setDate(end.getDate() + duration);
+    if (startEl) {
+      flatpickr(startEl, {
+        dateFormat: "Y-m-d",
+        allowInput: true,
+        locale: { firstDayOfWeek: 1 },
+        onChange: updateEndDate
+      });
+    }
 
-    const yyyy = end.getFullYear();
-    const mm = String(end.getMonth() + 1).padStart(2, '0');
-    const dd = String(end.getDate()).padStart(2, '0');
+    durationEl.addEventListener('input', updateEndDate);
+    // Pré-remplir le champ caché avec la date existante si disponible
+    const existingEnd = '{{ form.instance.end_date|date:"Y-m-d" }}';
+    const hiddenEnd = document.getElementById('end-date-hidden');
+    if (existingEnd && hiddenEnd) {
+      hiddenEnd.value = existingEnd;
+      endDisplay.textContent = existingEnd;
+    }
 
-    endDisplay.textContent = `${yyyy}-${mm}-${dd}`;
-  }
-
-  if (startEl) {
-    flatpickr(startEl, {
-      dateFormat: "Y-m-d",
-      allowInput: true,
-      locale: { firstDayOfWeek: 1 },
-      onChange: updateEndDate
-    });
-  }
-
-  durationEl.addEventListener('input', updateEndDate);
-
-});
+  });
 </script>
 
 {% endblock %}

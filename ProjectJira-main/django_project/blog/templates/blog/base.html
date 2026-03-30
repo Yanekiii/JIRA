@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,75 +17,77 @@
     }
   </style>
 </head>
+
 <body>
   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top border-bottom">
     <div class="container-fluid px-4">
 
       <a class="navbar-brand fw-bold text-primary me-4 d-flex align-items-center gap-3" href="{% url 'blog-home' %}">
         BENYS
-        <span style="width:1px; height:28px; background:rgba(255,255,255,0.3); display:inline-block; flex-shrink:0;"></span>
-       <img src="/media/logo_client.png"
-             alt="HELB Ilya Prigogine"
-             style="height:42px; width:auto; object-fit:contain;">
+        <span
+          style="width:1px; height:28px; background:rgba(255,255,255,0.3); display:inline-block; flex-shrink:0;"></span>
+        <img src="/media/logo_client.png" alt="HELB Ilya Prigogine"
+          style="height:42px; width:auto; object-fit:contain;">
       </a>
 
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggle"
+        aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse" id="navbarToggle">
         {% if user.is_authenticated %}
-          <div class="navbar-nav me-auto align-items-lg-center gap-lg-2">
-            <a class="nav-link text-dark fw-semibold" href="{% url 'blog-home' %}">Dashboard</a>
-            <a class="nav-link text-dark" href="{% url 'project-list' %}">Projects</a>
-          </div>
+        <div class="navbar-nav me-auto align-items-lg-center gap-lg-2">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'blog-home' %}">Dashboard</a>
+          <a class="nav-link text-dark" href="{% url 'project-list' %}">Projects</a>
+        </div>
 
-          <div class="navbar-nav ms-auto d-flex align-items-lg-center gap-lg-2">
-  
-            <a class="btn btn-primary btn-sm rounded-pill px-3" href="{% url 'ticket-create' %}">+ New Ticket</a>
+        <div class="navbar-nav ms-auto d-flex align-items-lg-center gap-lg-2">
 
-            {% if user.is_staff %}
-              <a class="btn btn-outline-success btn-sm rounded-pill px-3" href="{% url 'project-create' %}">+ New Project</a>
+          {% if user.is_staff %}
+          <a class="btn btn-outline-success btn-sm rounded-pill px-3" href="{% url 'project-create' %}">+ New
+            Project</a>
 
-              
-              <a href="{% url 'admin:index' %}" class="btn btn-outline-dark btn-sm rounded-pill px-3">Admin</a>
-            {% endif %}
 
-            <a class="nav-link text-secondary fs-5" href="{% url 'profile' %}" title="Profile">
-              <i class="bi bi-person-circle"></i>
-            </a>
+          <a href="{% url 'admin:index' %}" class="btn btn-outline-dark btn-sm rounded-pill px-3">Admin</a>
+          {% endif %}
 
-            <form method="POST" action="{% url 'logout' %}" class="d-inline m-0">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-link nav-link text-danger p-0 text-decoration-none d-flex align-items-center gap-1">
-                <i class="bi bi-box-arrow-right"></i>
-              </button>
-            </form>
+          <a class="nav-link text-secondary fs-5" href="{% url 'profile' %}" title="Profile">
+            <i class="bi bi-person-circle"></i>
+          </a>
 
-          </div>
+          <form method="POST" action="{% url 'logout' %}" class="d-inline m-0">
+            {% csrf_token %}
+            <button type="submit"
+              class="btn btn-link nav-link text-danger p-0 text-decoration-none d-flex align-items-center gap-1">
+              <i class="bi bi-box-arrow-right"></i>
+            </button>
+          </form>
+
+        </div>
         {% else %}
-          <div class="navbar-nav ms-auto d-flex align-items-lg-center gap-lg-2">
-            <a class="nav-link text-dark" href="{% url 'login' %}">Login</a>
-          </div>
+        <div class="navbar-nav ms-auto d-flex align-items-lg-center gap-lg-2">
+          <a class="nav-link text-dark" href="{% url 'login' %}">Login</a>
+        </div>
         {% endif %}
       </div>
     </div>
   </nav>
 
   <main>
-  {% if messages %}
+    {% if messages %}
     <div class="container-fluid px-4 pt-2">
       {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3 mt-2" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3 mt-2" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
       {% endfor %}
     </div>
-  {% endif %}
+    {% endif %}
 
-  {% block content %}{% endblock %}
-</main>
+    {% block content %}{% endblock %}
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -93,7 +96,7 @@
     document.addEventListener('DOMContentLoaded', function () {
       // Configuration TinyMCE (WYSIWYG)
       tinymce.init({
-        selector: 'textarea',
+        selector: 'textarea.wysiwyg',
         menubar: false,
         plugins: 'lists link',
         toolbar: 'bold italic underline | bullist numlist | link',
@@ -114,11 +117,12 @@
         }
       });
 
-      ['id_date_created','id_date_updated'].forEach(id => {
+      ['id_date_created', 'id_date_updated'].forEach(id => {
         const el = document.getElementById(id);
         if (el && !el._flatpickr) flatpickr(el, opts);
       });
     });
   </script>
 </body>
+
 </html>
