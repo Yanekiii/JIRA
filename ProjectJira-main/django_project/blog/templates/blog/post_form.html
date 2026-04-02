@@ -2,9 +2,9 @@
 {% load crispy_forms_tags %}
 {% block content %}
 
-<div class="container-fluid py-4 px-4">
+<div class="container py-5">
 
-  <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+  <div class="d-flex align-items-center gap-4 mb-4 flex-wrap">
     <a href="{% url 'blog-home' %}" class="btn btn-light btn-sm rounded-pill px-3 border">
       <i class="bi bi-arrow-left me-1"></i> Back
     </a>
@@ -27,7 +27,7 @@
 
     <div class="row g-4">
 
-      <div class="col-12 col-xl-8">
+      <div class="col-12">
 
         <div class="card border-0 shadow-sm rounded-4 mb-4">
           <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
@@ -129,19 +129,7 @@
 
       </div>
 
-      <div class="col-12 col-xl-4">
-
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-          <div class="card-body p-4">
-            <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 mb-2 fw-semibold">
-              <i class="bi bi-check-lg me-2"></i>
-              {% if form.instance.pk %}Save Changes{% else %}Create Ticket{% endif %}
-            </button>
-            <a href="{% url 'blog-home' %}" class="btn btn-outline-secondary w-100 rounded-pill py-2">
-              <i class="bi bi-x-lg me-2"></i>Cancel
-            </a>
-          </div>
-        </div>
+      <div class="col-12">
 
         <div class="card border-0 shadow-sm rounded-4 mb-4">
           <div class="card-header bg-white border-0 px-4 pt-4 pb-2">
@@ -189,6 +177,27 @@
           </div>
 
         </div>
+
+        <div class="card-body p-4 text-center">
+
+          <div class="d-flex justify-content-center gap-3 flex-wrap">
+
+            <button type="submit"
+              class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
+              <i class="bi bi-check-lg me-2"></i>
+              {% if form.instance.pk %}Save Changes{% else %}Create Ticket{% endif %}
+            </button>
+
+            <a href="{% url 'blog-home' %}"
+              class="btn btn-outline-secondary rounded-pill px-4 py-2">
+              <i class="bi bi-x-lg me-2"></i>Cancel
+            </a>
+
+          </div>
+
+        </div>
+      
+      
       </div>
   </form>
 
@@ -269,6 +278,7 @@
   .ticket-type-card.active .ttc-label {
     color: #1a3a6b;
   }
+
 </style>
 
 <script>
