@@ -40,7 +40,6 @@
           <select name="role" class="form-select form-select-sm" style="width:130px;">
             <option value="contributor" {% if m.role == 'contributor' %}selected{% endif %}>Contributor</option>
             <option value="readonly"    {% if m.role == 'readonly'    %}selected{% endif %}>Read-Only</option>
-            <option value="admin"       {% if m.role == 'admin'       %}selected{% endif %}>Admin</option>
           </select>
           <button type="submit" class="btn btn-outline-primary btn-sm">Save</button>
         </form>
@@ -83,7 +82,6 @@
         <select name="role" class="form-select">
           <option value="contributor">Contributor</option>
           <option value="readonly">Read-Only</option>
-          <option value="admin">Admin</option>
         </select>
       </div>
       <div class="col-md-3">

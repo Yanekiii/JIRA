@@ -33,7 +33,6 @@ class Project(models.Model):
 
 class ProjectMembership(models.Model):
     ROLE_CHOICES = [
-        ('admin',       'Admin'),
         ('contributor', 'Contributor'),
         ('readonly',    'Read-Only'),
     ]

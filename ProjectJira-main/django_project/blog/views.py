@@ -328,10 +328,17 @@ def manage_members(request, project_pk):
 
 
 # ── Sprints ───────────────────────────────────────────────────────────────────
-class SprintCreateView(AdminRequiredMixin, CreateView):
+
+class SprintCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Sprint
     fields = ['name', 'goal', 'start_date', 'global_capacity']
     template_name = 'blog/sprint_form.html'
+
+    def test_func(self):
+        project = get_object_or_404(Project, pk=self.kwargs['project_pk'])
+        role = get_user_role(self.request.user, project)
+        # Autorise le Staff OU le Contributor
+        return self.request.user.is_staff or role == 'contributor'
 
     def form_valid(self, form):
         project = get_object_or_404(Project, pk=self.kwargs['project_pk'])
@@ -341,28 +348,31 @@ class SprintCreateView(AdminRequiredMixin, CreateView):
         form.instance.end_date = start + timedelta(days=duration)
         return super().form_valid(form)
 
-
-class SprintUpdateView(AdminRequiredMixin, UpdateView):
+class SprintUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Sprint
     fields = ['name', 'goal', 'start_date', 'end_date', 'status', 'global_capacity']
     template_name = 'blog/sprint_form.html'
+
+    def test_func(self):
+        sprint = self.get_object()
+        role = get_user_role(self.request.user, sprint.project)
+        return self.request.user.is_staff or role == 'contributor'
 
     def form_valid(self, form):
         sprint = form.save()
         return redirect('project-detail', pk=sprint.project.pk)
 
-    def form_invalid(self, form):
-        print("FORM ERRORS:", form.errors)
-        return super().form_invalid(form)
-
-
-class SprintDeleteView(AdminRequiredMixin, DeleteView):
+class SprintDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Sprint
     template_name = 'blog/sprint_confirm_delete.html'
 
+    def test_func(self):
+        sprint = self.get_object()
+        role = get_user_role(self.request.user, sprint.project)
+        return self.request.user.is_staff or role == 'contributor'
+
     def get_success_url(self):
         return reverse_lazy('project-detail', kwargs={'pk': self.get_object().project.pk})
-
 
 def sprint_start(request, pk):
     sprint = get_object_or_404(Sprint, pk=pk)
