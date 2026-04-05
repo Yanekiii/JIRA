@@ -80,6 +80,19 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
         if not self.request.user.is_staff and not self.request.user.is_superuser:
             if 'demandeur' in form.fields:
                 del form.fields['demandeur']
+
+        project_pk = self.kwargs.get('project_pk')
+        if project_pk and 'sprint' in form.fields:
+            form.fields['sprint'].queryset = Sprint.objects.filter(
+                project_id=project_pk
+            ).exclude(status='completed')
+        if project_pk and 'epic' in form.fields:
+            form.fields['epic'].queryset = Epic.objects.filter(project_id=project_pk)
+        if project_pk and 'parent_ticket' in form.fields:
+            form.fields['parent_ticket'].queryset = Ticket.objects.filter(
+                project_id=project_pk, ticket_type__in=['story', 'bug']
+            )
+
         return form
 
     def form_valid(self, form):
@@ -96,11 +109,25 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
             messages.error(self.request, "You don't have permission to create tickets in this project.")
             return redirect('project-detail', pk=project.pk)
 
+        sprint = form.cleaned_data.get('sprint')
+        if sprint and sprint.status == 'completed':
+            messages.error(self.request, f'Le sprint "{sprint.name}" est terminé. Vous ne pouvez plus y ajouter de tickets.')
+            return self.form_invalid(form)
+
         form.instance.reporter = self.request.user
         if not self.request.user.is_staff and not self.request.user.is_superuser:
             form.instance.demandeur = self.request.user
 
+        self._action = self.request.POST.get('action', 'continue')
         return super().form_valid(form)
+
+    def get_success_url(self):
+        project = self.object.project
+        if getattr(self, '_action', 'continue') == 'back' and project:
+            return reverse_lazy('project-detail', kwargs={'pk': project.pk})
+        if project:
+            return reverse_lazy('ticket-create', kwargs={'project_pk': project.pk})
+        return reverse_lazy('blog-home')
 
     def get_initial(self):
         initial = super().get_initial()
@@ -108,7 +135,7 @@ class TicketCreateView(LoginRequiredMixin, CreateView):
         if project_pk:
             initial['project'] = project_pk
         return initial
-    
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         project_pk = self.kwargs.get('project_pk')
@@ -133,6 +160,20 @@ class TicketUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         if not self.request.user.is_staff and not self.request.user.is_superuser:
             if 'demandeur' in form.fields:
                 del form.fields['demandeur']
+
+        ticket = self.get_object()
+        project = ticket.project
+        if 'sprint' in form.fields:
+            form.fields['sprint'].queryset = Sprint.objects.filter(
+                project=project
+            ).exclude(status='completed')
+        if 'epic' in form.fields:
+            form.fields['epic'].queryset = Epic.objects.filter(project=project)
+        if 'parent_ticket' in form.fields:
+            form.fields['parent_ticket'].queryset = Ticket.objects.filter(
+                project=project, ticket_type__in=['story', 'bug']
+            ).exclude(pk=ticket.pk)
+
         return form
 
     def test_func(self):
@@ -390,8 +431,9 @@ def sprint_close(request, pk):
     if (request.user.is_staff or role == 'contributor') and sprint.status == 'active':
         sprint.status = 'completed'
         sprint.save()
-        Ticket.objects.filter(sprint=sprint).exclude(status='closed').update(sprint=None)
-        messages.success(request, f'Sprint "{sprint.name}" closed. Unfinished tickets moved back to backlog.')
+        # Passer les tickets non-terminés en "closed" (ils restent dans le sprint)
+        Ticket.objects.filter(sprint=sprint).exclude(status='closed').update(status='closed')
+        messages.success(request, f'Sprint "{sprint.name}" terminé. Tous les tickets sont maintenant closed.')
     return redirect('project-detail', pk=sprint.project.pk)
 
 
