@@ -11,6 +11,7 @@ class Project(models.Model):
         ('mh', 'Man-Hours'),
     ]
     code            = models.CharField(max_length=20, unique=True)
+    title = models.CharField(max_length=100, blank=True)
     name            = models.CharField(max_length=100)
     description     = models.TextField(blank=True)
     start_date      = models.DateField()
@@ -46,6 +47,15 @@ class ProjectMembership(models.Model):
     def __str__(self):
         return f"{self.user.username} — {self.project.code} ({self.role})"
 
+    def delete(self, *args, **kwargs):
+        from .models import Ticket
+
+        Ticket.objects.filter(
+            project=self.project,
+            assignee=self.user
+        ).delete()  # ou update(assignee=None)
+
+        super().delete(*args, **kwargs)
 
 class Sprint(models.Model):
     STATUS_CHOICES = [
@@ -68,6 +78,12 @@ class Sprint(models.Model):
     def get_absolute_url(self):
         return reverse('project-detail', kwargs={'pk': self.project.pk})
 
+    @property
+    def display_name(self):
+        sprint_number = Sprint.objects.filter(project=self.project).order_by('created_at').values_list('id', flat=True)
+        index = list(sprint_number).index(self.id) + 1
+        return f"Sprint {index}"
+        
     def save(self, *args, **kwargs):
         if self.status == 'active':
             Sprint.objects.filter(

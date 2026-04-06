@@ -355,7 +355,8 @@ def manage_members(request, project_pk):
             ProjectMembership.objects.filter(project=project, user=target).update(role=role)
             messages.success(request, f'{target.username} role updated to {role}.')
         elif action == 'remove':
-            ProjectMembership.objects.filter(project=project, user=target).delete()
+            membership = ProjectMembership.objects.get(project=project, user=target)
+            membership.delete()
             messages.success(request, f'{target.username} removed from project.')
 
         return redirect('manage-members', project_pk=project_pk)

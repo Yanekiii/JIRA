@@ -101,7 +101,8 @@
           <div class="card mb-3 border rounded-3">
             <div class="card-header d-flex justify-content-between align-items-center bg-white flex-wrap gap-2">
               <div>
-                <strong>{{ sprint.name }}</strong>
+                <strong>{{ sprint.display_name }}</strong><br>
+                <small>{{ sprint.name }}</small>                
                 <span
                   class="badge ms-2 {% if sprint.status == 'active' %}bg-success{% elif sprint.status == 'planned' %}bg-secondary{% else %}bg-dark{% endif %}">
                   {{ sprint.get_status_display }}
