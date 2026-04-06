@@ -355,9 +355,14 @@ def manage_members(request, project_pk):
             ProjectMembership.objects.filter(project=project, user=target).update(role=role)
             messages.success(request, f'{target.username} role updated to {role}.')
         elif action == 'remove':
+            Ticket.objects.filter(
+                project=project,
+                assignee=target
+            ).update(assignee=None)
             membership = ProjectMembership.objects.get(project=project, user=target)
             membership.delete()
-            messages.success(request, f'{target.username} removed from project.')
+
+            messages.success(request, f'{target.username} removed from project and unassigned from tickets.')
 
         return redirect('manage-members', project_pk=project_pk)
 
