@@ -6,9 +6,9 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from .models import Ticket, Project, Sprint, Epic, ProjectMembership
-from django.db.models import Case, When, Value, IntegerField
-from datetime import timedelta
+from .models import Ticket, Project, Sprint, Epic, ProjectMembership, Announcement
+from django.db.models import Q, Case, When, Value, IntegerField
+from datetime import timedelta,date
 
 
 # ── Helper ────────────────────────────────────────────────────────────────────
@@ -261,12 +261,15 @@ class ProjectListView(LoginRequiredMixin, ListView):
 
 
 class ProjectDetailView(LoginRequiredMixin, DetailView):
+    
     model = Project
     template_name = 'blog/project_detail.html'
 
     def get_context_data(self, **kwargs):
+        
         context = super().get_context_data(**kwargs)
         project = self.get_object()
+        
 
         sprints = project.sprints.prefetch_related('tickets').annotate(
             active_first=Case(
@@ -281,6 +284,9 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
         context['members'] = project.memberships.select_related('user')
         context['active_sprint'] = sprints.filter(status='active').first()
         context['user_role'] = get_user_role(self.request.user, project)
+        context['announcements'] = project.announcements.filter(
+            Q(expires_at__isnull=True) | Q(expires_at__gte=date.today())
+        )
         return context
 
 
@@ -505,3 +511,46 @@ class EpicDeleteView(AdminRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy('project-detail', kwargs={'pk': self.get_object().project.pk})
+    
+# ---------- Annonces  ------------------------------------
+
+@login_required
+def announcement_create(request, project_pk):
+    project = get_object_or_404(Project, pk=project_pk)
+ 
+    # Seul un admin/staff peut créer une annonce
+    if not request.user.is_staff:
+        messages.error(request, "Only admins can post announcements.")
+        return redirect('project-detail', pk=project_pk)
+ 
+    if request.method == 'POST':
+        message    = request.POST.get('message', '').strip()
+        type_      = request.POST.get('type', 'info')
+        expires_at = request.POST.get('expires_at') or None
+ 
+        if message:
+            Announcement.objects.create(
+                project=project,
+                message=message,
+                type=type_,
+                created_by=request.user,
+                expires_at=expires_at,
+            )
+            messages.success(request, "Announcement posted.")
+ 
+    return redirect('project-detail', pk=project_pk)
+ 
+ 
+@login_required
+def announcement_delete(request, pk):
+    from .models import Announcement
+    announcement = get_object_or_404(Announcement, pk=pk)
+ 
+    if not request.user.is_staff:
+        messages.error(request, "Only admins can delete announcements.")
+        return redirect('project-detail', pk=announcement.project.pk)
+ 
+    project_pk = announcement.project.pk
+    announcement.delete()
+    messages.success(request, "Announcement deleted.")
+    return redirect('project-detail', pk=project_pk)

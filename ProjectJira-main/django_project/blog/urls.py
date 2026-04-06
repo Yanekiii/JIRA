@@ -46,4 +46,10 @@ urlpatterns = [
     path('project/<int:project_pk>/epic/new/', EpicCreateView.as_view(), name='epic-create'),
     path('epic/<int:pk>/update/', EpicUpdateView.as_view(), name='epic-update'),
     path('epic/<int:pk>/delete/', EpicDeleteView.as_view(), name='epic-delete'),
+
+
+# Announcements
+    path('project/<int:project_pk>/announcement/new/', views.announcement_create, name='announcement-create'),
+    path('announcement/<int:pk>/delete/', views.announcement_delete, name='announcement-delete'),
+    
 ]
