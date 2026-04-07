@@ -181,7 +181,13 @@
                   {% if sprint.status == 'planned' %}
                   <a href="{% url 'sprint-start' sprint.id %}" class="btn btn-success btn-sm">Start</a>
                   {% elif sprint.status == 'active' %}
-                  <a href="{% url 'sprint-close' sprint.id %}" class="btn btn-warning btn-sm">Close</a>
+                  <button type="button" class="btn btn-warning btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#closeSprintModal"
+                    data-sprint-id="{{ sprint.id }}"
+                    data-sprint-name="{{ sprint.name }}">
+                    Close
+                  </button>
                   {% endif %}
                 {% endif %}
                 {% if user.is_staff %}
@@ -259,5 +265,93 @@
     </div>
   </section>
 </div>
+
+<!-- ── Modal : Clôture de sprint ── -->
+<div class="modal fade" id="closeSprintModal" tabindex="-1" aria-labelledby="closeSprintModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="closeSprintModalLabel">
+          🏁 Close Sprint
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body px-4 pb-2">
+        <p class="text-muted mb-3">
+          What should happen to tickets that are <strong>not yet closed</strong> in
+          <strong id="closeSprintModalName"></strong>?
+        </p>
+
+        <!-- Option A : clôturer -->
+        <div class="d-grid gap-2">
+          <a id="closeSprintCloseBtn" href="#"
+            class="btn btn-dark rounded-3 text-start px-4 py-3">
+            <div class="fw-bold">✅ Close all remaining tickets</div>
+            <small class="opacity-75">They will be marked as "Closed" automatically.</small>
+          </a>
+
+          <!-- Option B : déplacer -->
+          {% with sprints|dictsort:"start_date" as sorted_sprints %}
+          <div id="moveToSprintWrapper">
+            {% for s in sorted_sprints %}
+              {% if s.status == 'planned' %}
+              <a href="#"
+                class="btn btn-outline-primary rounded-3 text-start px-4 py-3 mb-2 d-block move-to-sprint-btn"
+                data-sprint-id="{{ s.id }}"
+                data-sprint-name="{{ s.name }}">
+                <div class="fw-bold">🔄 Move to: {{ s.display_name|default:s.name }}</div>
+                <small class="opacity-75">{{ s.start_date }} → {{ s.end_date }}</small>
+              </a>
+              {% endif %}
+            {% endfor %}
+          </div>
+          {% endwith %}
+
+          <div id="noNextSprintMsg" class="alert alert-light border rounded-3 d-none">
+            <i class="bi bi-info-circle me-1"></i>
+            No planned sprint available to move tickets to.
+            <a href="{% url 'sprint-create' project.id %}">Create one first</a>.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-2">
+        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const modal = document.getElementById('closeSprintModal');
+
+  modal.addEventListener('show.bs.modal', function (e) {
+    const btn = e.relatedTarget;
+    const sprintId = btn.dataset.sprintId;
+    const sprintName = btn.dataset.sprintName;
+
+    // Mettre à jour le nom du sprint dans la modale
+    document.getElementById('closeSprintModalName').textContent = sprintName;
+
+    // URL pour clôturer
+    document.getElementById('closeSprintCloseBtn').href = `/sprint/${sprintId}/close/?action=close_all`;
+
+    // URLs pour déplacer vers chaque sprint planifié
+    document.querySelectorAll('.move-to-sprint-btn').forEach(a => {
+      const targetSprintId = a.dataset.sprintId;
+      a.href = `/sprint/${sprintId}/close/?action=move&target=${targetSprintId}`;
+    });
+
+    // Afficher message si aucun sprint planifié disponible
+    const moveButtons = document.querySelectorAll('.move-to-sprint-btn');
+    const noMsg = document.getElementById('noNextSprintMsg');
+    if (moveButtons.length === 0) {
+      noMsg.classList.remove('d-none');
+    } else {
+      noMsg.classList.add('d-none');
+    }
+  });
+});
+</script>
 
 {% endblock content %}

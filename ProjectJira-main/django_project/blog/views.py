@@ -440,12 +440,32 @@ def sprint_start(request, pk):
 def sprint_close(request, pk):
     sprint = get_object_or_404(Sprint, pk=pk)
     role = get_user_role(request.user, sprint.project)
-    if (request.user.is_staff or role == 'contributor') and sprint.status == 'active':
-        sprint.status = 'completed'
-        sprint.save()
-        # Passer les tickets non-terminés en "closed" (ils restent dans le sprint)
-        Ticket.objects.filter(sprint=sprint).exclude(status='closed').update(status='closed')
-        messages.success(request, f'Sprint "{sprint.name}" terminé. Tous les tickets sont maintenant closed.')
+
+    if not (request.user.is_staff or role == 'contributor'):
+        messages.error(request, "You don't have permission to close this sprint.")
+        return redirect('project-detail', pk=sprint.project.pk)
+
+    if sprint.status != 'active':
+        messages.warning(request, "This sprint is not active.")
+        return redirect('project-detail', pk=sprint.project.pk)
+
+    action = request.GET.get('action', 'close_all')
+    target_id = request.GET.get('target')
+
+    non_closed = sprint.tickets.exclude(status='closed')
+
+    if action == 'move' and target_id:
+        target_sprint = get_object_or_404(Sprint, pk=target_id, project=sprint.project)
+        non_closed.update(sprint=target_sprint)
+        messages.success(request, f'Sprint "{sprint.name}" closed — {non_closed.count()} ticket(s) moved to "{target_sprint.name}".')
+    else:
+        count = non_closed.count()
+        non_closed.update(status='closed')
+        messages.success(request, f'Sprint "{sprint.name}" closed — {count} ticket(s) marked as closed.')
+
+    sprint.status = 'completed'
+    sprint.save()
+
     return redirect('project-detail', pk=sprint.project.pk)
 
 
