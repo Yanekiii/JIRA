@@ -41,6 +41,7 @@ urlpatterns = [
     path('sprint/<int:pk>/start/', views.sprint_start, name='sprint-start'),
     path('sprint/<int:pk>/close/', views.sprint_close, name='sprint-close'),
     path('sprint/<int:pk>/kanban/', views.sprint_kanban, name='sprint-kanban'),
+    path('sprint/<int:sprint_pk>/members/', views.manage_sprint_members, name='manage-sprint-members'),
 
     # Epics
     path('project/<int:project_pk>/epic/new/', EpicCreateView.as_view(), name='epic-create'),
@@ -48,7 +49,7 @@ urlpatterns = [
     path('epic/<int:pk>/delete/', EpicDeleteView.as_view(), name='epic-delete'),
 
 
-# Announcements
+    # Announcements
     path('project/<int:project_pk>/announcement/new/', views.announcement_create, name='announcement-create'),
     path('announcement/<int:pk>/delete/', views.announcement_delete, name='announcement-delete'),
     

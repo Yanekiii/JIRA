@@ -6,7 +6,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from .models import Ticket, Project, Sprint, Epic, ProjectMembership, Announcement
+from .models import Ticket, Project, Sprint, Epic, ProjectMembership, Announcement, SprintMember
 from django.db.models import Q, Case, When, Value, IntegerField
 from datetime import timedelta,date
 
@@ -293,7 +293,7 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
 class ProjectCreateView(AdminRequiredMixin, CreateView):
     model = Project
     fields = ['code', 'name', 'description', 'start_date', 'end_date',
-              'sprint_duration', 'workload_unit', 'capacity']
+              'sprint_duration', 'workload_unit']
     template_name = 'blog/project_form.html'
 
     def get_initial(self):
@@ -307,7 +307,7 @@ class ProjectCreateView(AdminRequiredMixin, CreateView):
 class ProjectUpdateView(AdminRequiredMixin, UpdateView):
     model = Project
     fields = ['code', 'name', 'description', 'start_date', 'end_date',
-              'sprint_duration', 'workload_unit', 'capacity']
+              'sprint_duration', 'workload_unit']
     template_name = 'blog/project_form.html'
 
 
@@ -574,3 +574,56 @@ def announcement_delete(request, pk):
     announcement.delete()
     messages.success(request, "Announcement deleted.")
     return redirect('project-detail', pk=project_pk)
+
+@login_required
+def manage_sprint_members(request, sprint_pk):
+    sprint = get_object_or_404(Sprint, pk=sprint_pk)
+    project = sprint.project
+    
+
+    role = get_user_role(request.user, project)
+    if not (request.user.is_staff or role == 'contributor'):
+        messages.error(request, "Accès refusé.")
+        return redirect('project-detail', pk=project.pk)
+
+    
+    project_members = project.memberships.select_related('user')
+    sprint_members = sprint.sprint_members.all()
+    
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        capacity = request.POST.get('capacity', 0)
+        action = request.POST.get('action')
+
+        if action == 'add_or_update':
+            member_user = get_object_or_404(User, pk=user_id)
+            
+           
+            raw_capacity = request.POST.get('capacity')
+            if not raw_capacity or raw_capacity.strip() == "":
+                capacity = 0
+            else:
+                try:
+                    capacity = int(raw_capacity)
+                except ValueError:
+                    capacity = 0
+            
+
+            SprintMember.objects.update_or_create(
+                sprint=sprint, 
+                user=member_user,
+                defaults={'individual_capacity': capacity}
+            )
+            messages.success(request, f"Capacity updated for {member_user.username}")
+        
+        elif action == 'remove':
+            SprintMember.objects.filter(sprint=sprint, user_id=user_id).delete()
+            messages.success(request, "Membre retiré du sprint")
+
+        return redirect('manage-sprint-members', sprint_pk=sprint.pk)
+
+    return render(request, 'blog/manage_sprint_members.html', {
+        'sprint': sprint,
+        'project_members': project_members,
+        'sprint_members': sprint_members,
+    })

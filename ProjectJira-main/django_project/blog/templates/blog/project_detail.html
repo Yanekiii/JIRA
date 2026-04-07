@@ -193,6 +193,9 @@
                 {% if user.is_staff %}
                 <a href="{% url 'sprint-update' sprint.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
                 <a href="{% url 'sprint-delete' sprint.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+                <a href="{% url 'manage-sprint-members' sprint.id %}" class="btn btn-outline-dark btn-sm">Manage Members</a>
+                  
+              
                 {% endif %}
               </div>
             </div>
