@@ -181,12 +181,21 @@
                   {% if sprint.status == 'planned' %}
                   <a href="{% url 'sprint-start' sprint.id %}" class="btn btn-success btn-sm">Start</a>
                   {% elif sprint.status == 'active' %}
-                  <a href="{% url 'sprint-close' sprint.id %}" class="btn btn-warning btn-sm">Close</a>
+                  <button type="button" class="btn btn-warning btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#closeSprintModal"
+                    data-sprint-id="{{ sprint.id }}"
+                    data-sprint-name="{{ sprint.name }}">
+                    Close
+                  </button>
                   {% endif %}
                 {% endif %}
                 {% if user.is_staff %}
                 <a href="{% url 'sprint-update' sprint.id %}" class="btn btn-outline-secondary btn-sm">Edit</a>
                 <a href="{% url 'sprint-delete' sprint.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+                <a href="{% url 'manage-sprint-members' sprint.id %}" class="btn btn-outline-dark btn-sm">Manage Members</a>
+                  
+              
                 {% endif %}
               </div>
             </div>
@@ -259,5 +268,205 @@
     </div>
   </section>
 </div>
+
+<!-- ── Modal : Clôture de sprint ── -->
+<div class="modal fade" id="closeSprintModal" tabindex="-1" aria-labelledby="closeSprintModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="closeSprintModalLabel">🏁 Close Sprint</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form method="POST" id="closeSprintForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="closeSprintAction" value="close_all">
+        <input type="hidden" name="target_sprint" id="closeSprintTarget" value="">
+
+        <div class="modal-body px-4 pb-2">
+          <p class="text-muted mb-3">
+            What should happen to tickets that are <strong>not yet closed</strong> in
+            <strong id="closeSprintModalName"></strong>?
+          </p>
+
+          <!-- Ticket list with checkboxes -->
+          <div id="ticketListSection" class="mb-3" style="display:none;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="fw-semibold small text-uppercase text-muted">Open Tickets</label>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-link btn-sm p-0 text-primary" id="checkAllBtn">Select all</button>
+                <span class="text-muted">·</span>
+                <button type="button" class="btn btn-link btn-sm p-0 text-secondary" id="uncheckAllBtn">None</button>
+              </div>
+            </div>
+            <div id="ticketCheckboxList" class="border rounded-3" style="max-height:260px; overflow-y:auto; padding-left:6px;">
+              <!-- Filled by JS -->
+            </div>
+            <small class="text-muted mt-1 d-block" id="ticketSelectionHint"></small>
+          </div>
+
+          <div id="ticketListLoading" class="text-center py-3 text-muted">
+            <div class="spinner-border spinner-border-sm me-2"></div>Loading tickets…
+          </div>
+          <div id="ticketListEmpty" class="alert alert-success rounded-3 d-none">
+            ✅ All tickets are already closed — the sprint can be closed without any action.
+          </div>
+
+          <!-- Actions -->
+          <div id="actionButtons" class="d-grid gap-2 mt-3" style="display:none !important;">
+
+            <!-- Close all (always visible) -->
+            <button type="button" class="btn btn-dark rounded-3 text-start px-4 py-3" id="closeAllBtn">
+              <div class="fw-bold">✅ Close all remaining tickets</div>
+              <small class="opacity-75">All tickets will be moved to 'Closed'.</small>
+            </button>
+
+            <!-- Move to sprint options -->
+            <div id="moveToSprintWrapper">
+              {% with sprints|dictsort:"start_date" as sorted_sprints %}
+              {% for s in sorted_sprints %}
+                {% if s.status == 'planned' %}
+                <button type="button"
+                  class="btn btn-outline-primary rounded-3 text-start px-4 py-3 mb-1 w-100 move-to-sprint-btn"
+                  data-sprint-id="{{ s.id }}"
+                  data-sprint-name="{{ s.name }}">
+                  <div class="fw-bold">🔄 Move selected → {{ s.display_name|default:s.name }}</div>
+                  <small class="opacity-75">{{ s.start_date }} → {{ s.end_date }} <br>
+                  Unchecked tickets will be closed; checked tickets will transition to {{ s.display_name|default:s.name }}.</small>
+                </button>
+                {% endif %}
+              {% endfor %}
+              {% endwith %}
+            </div>
+
+            <div id="noNextSprintMsg" class="alert alert-light border rounded-3 d-none">
+              <i class="bi bi-info-circle me-1"></i>
+              No planned sprint available.
+              <a href="{% url 'sprint-create' project.id %}">Create one first</a>.
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer border-0 pt-2">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const modal        = document.getElementById('closeSprintModal');
+  const form         = document.getElementById('closeSprintForm');
+  const actionInput  = document.getElementById('closeSprintAction');
+  const targetInput  = document.getElementById('closeSprintTarget');
+  const nameEl       = document.getElementById('closeSprintModalName');
+  const listSection  = document.getElementById('ticketListSection');
+  const listEl       = document.getElementById('ticketCheckboxList');
+  const loadingEl    = document.getElementById('ticketListLoading');
+  const emptyEl      = document.getElementById('ticketListEmpty');
+  const actionsEl    = document.getElementById('actionButtons');
+  const hintEl       = document.getElementById('ticketSelectionHint');
+  const moveWrapper  = document.getElementById('moveToSprintWrapper');
+  const noSprintMsg  = document.getElementById('noNextSprintMsg');
+
+  let currentSprintId = null;
+
+  const TYPE_COLORS = { story: 'bg-primary', bug: 'bg-danger', task: 'bg-secondary' };
+
+  modal.addEventListener('show.bs.modal', function (e) {
+    const btn = e.relatedTarget;
+    currentSprintId = btn.dataset.sprintId;
+    const sprintName = btn.dataset.sprintName;
+
+    nameEl.textContent = sprintName;
+    form.action = `/sprint/${currentSprintId}/close/`;
+
+    // Reset
+    listEl.innerHTML  = '';
+    loadingEl.style.display  = '';
+    listSection.style.display = 'none';
+    emptyEl.classList.add('d-none');
+    actionsEl.style.display   = 'none';
+
+    // Load tickets
+    fetch(`/sprint/${currentSprintId}/close/preview/`)
+      .then(r => r.json())
+      .then(data => {
+        loadingEl.style.display = 'none';
+
+        if (!data.tickets || data.tickets.length === 0) {
+          emptyEl.classList.remove('d-none');
+          actionsEl.style.removeProperty('display');
+          return;
+        }
+
+        // Build checkbox list
+        listSection.style.display = '';
+        data.tickets.forEach(t => {
+          const color = TYPE_COLORS[t.ticket_type] || 'bg-secondary';
+          const div = document.createElement('div');
+          div.className = 'form-check pe-3 py-2 border-bottom d-flex align-items-center gap-2';
+          div.innerHTML = `
+            <input class="form-check-input ticket-checkbox mt-0" type="checkbox"
+              name="move_tickets" value="${t.id}" id="tc_${t.id}" checked>
+            <label class="form-check-label d-flex align-items-center gap-2 w-100" for="tc_${t.id}">
+              <span class="badge ${color}" style="font-size:.65rem;">${t.ticket_type}</span>
+              <span class="text-muted" style="font-size:.8rem;">${t.human_id}</span>
+              <span class="fw-semibold">${t.title}</span>
+            </label>`;
+          listEl.appendChild(div);
+        });
+
+        updateHint();
+        actionsEl.style.removeProperty('display');
+
+        // Check if planned sprints exist
+        const hasSprints = moveWrapper.querySelectorAll('.move-to-sprint-btn').length > 0;
+        noSprintMsg.classList.toggle('d-none', hasSprints);
+      })
+      .catch(() => {
+        loadingEl.style.display = 'none';
+        actionsEl.style.removeProperty('display');
+      });
+  });
+
+  // Select / deselect all
+  document.getElementById('checkAllBtn').addEventListener('click', () => {
+    listEl.querySelectorAll('.ticket-checkbox').forEach(cb => cb.checked = true);
+    updateHint();
+  });
+  document.getElementById('uncheckAllBtn').addEventListener('click', () => {
+    listEl.querySelectorAll('.ticket-checkbox').forEach(cb => cb.checked = false);
+    updateHint();
+  });
+  listEl.addEventListener('change', updateHint);
+
+  function updateHint() {
+    const all     = listEl.querySelectorAll('.ticket-checkbox').length;
+    const checked = listEl.querySelectorAll('.ticket-checkbox:checked').length;
+    if (all === 0) { hintEl.textContent = ''; return; }
+    hintEl.textContent = `${checked} ticket(s) selected to move · ${all - checked} will be closed`;
+  }
+
+  // Close all
+  document.getElementById('closeAllBtn').addEventListener('click', () => {
+    actionInput.value = 'close_all';
+    targetInput.value = '';
+    form.submit();
+  });
+
+  // Move to sprint
+  moveWrapper.addEventListener('click', e => {
+    const btn = e.target.closest('.move-to-sprint-btn');
+    if (!btn) return;
+    actionInput.value = 'move';
+    targetInput.value = btn.dataset.sprintId;
+    form.submit();
+  });
+});
+</script>
 
 {% endblock content %}

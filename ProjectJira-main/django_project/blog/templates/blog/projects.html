@@ -26,10 +26,12 @@
           <div>
 
             <h4 class="fw-bold mb-1">
-              {{ project.name }}
-              <span class="badge bg-secondary ms-2">
-                {{ project.code }}
-              </span>
+          <a href="{% url 'project-detail' project.id %}" class="text-decoration-none text-dark fw-bold">
+            {{ project.name }}
+          </a>
+            <span class="badge bg-secondary ms-2">
+            {{ project.code }}
+          </span>
             </h4>
 
             {% if project.description %}

@@ -6,7 +6,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from .models import Ticket, Project, Sprint, Epic, ProjectMembership, Announcement
+from .models import Ticket, Project, Sprint, Epic, ProjectMembership, Announcement, SprintMember
 from django.db.models import Q, Case, When, Value, IntegerField
 from datetime import timedelta,date
 
@@ -27,6 +27,9 @@ class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
 # ── Misc ──────────────────────────────────────────────────────────────────────
 def about(request):
     return render(request, 'blog/about.html', {'title': 'About'})
+
+def guide(request):
+    return render(request, 'blog/guide.html')
 
 def home(request):
     if not request.user.is_authenticated:
@@ -293,7 +296,7 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
 class ProjectCreateView(AdminRequiredMixin, CreateView):
     model = Project
     fields = ['code', 'name', 'description', 'start_date', 'end_date',
-              'sprint_duration', 'workload_unit', 'capacity']
+              'sprint_duration', 'workload_unit']
     template_name = 'blog/project_form.html'
 
     def get_initial(self):
@@ -307,7 +310,7 @@ class ProjectCreateView(AdminRequiredMixin, CreateView):
 class ProjectUpdateView(AdminRequiredMixin, UpdateView):
     model = Project
     fields = ['code', 'name', 'description', 'start_date', 'end_date',
-              'sprint_duration', 'workload_unit', 'capacity']
+              'sprint_duration', 'workload_unit']
     template_name = 'blog/project_form.html'
 
 
@@ -437,15 +440,68 @@ def sprint_start(request, pk):
     return redirect('project-detail', pk=sprint.project.pk)
 
 
+def sprint_close_preview(request, pk):
+    sprint = get_object_or_404(Sprint, id=pk)
+
+    # ✅ Utiliser 'number' au lieu de 'human_id' (qui est un @property, pas un champ DB)
+    tickets = list(
+        sprint.tickets.exclude(status='closed').values(
+            'id', 'number', 'title', 'ticket_type', 'status', 'priority'
+        )
+    )
+
+    # Reconstituer human_id manuellement depuis 'number'
+    for t in tickets:
+        t['human_id'] = f"#{t['number']}"   # ← adapte le format si besoin (ex: "PROJ-42")
+
+    return JsonResponse({'tickets': tickets})
+
+
 def sprint_close(request, pk):
     sprint = get_object_or_404(Sprint, pk=pk)
     role = get_user_role(request.user, sprint.project)
-    if (request.user.is_staff or role == 'contributor') and sprint.status == 'active':
+
+    if not (request.user.is_staff or role == 'contributor'):
+        messages.error(request, "You don't have permission to close this sprint.")
+        return redirect('project-detail', pk=sprint.project.pk)
+
+    if sprint.status != 'active':
+        messages.warning(request, "This sprint is not active.")
+        return redirect('project-detail', pk=sprint.project.pk)
+
+    if request.method == 'POST':
+        action    = request.POST.get('action', 'close_all')
+        target_id = request.POST.get('target_sprint')
+        move_ids  = request.POST.getlist('move_tickets')  # checkboxes
+
+        non_closed = sprint.tickets.exclude(status='closed')
+
+        if action == 'move' and target_id:
+            target_sprint = get_object_or_404(Sprint, pk=target_id, project=sprint.project)
+            if move_ids:
+                to_move  = non_closed.filter(id__in=move_ids)
+                to_close = non_closed.exclude(id__in=move_ids)
+                moved_count  = to_move.count()
+                closed_count = to_close.count()
+                to_move.update(sprint=target_sprint)
+                to_close.update(status='closed')
+                messages.success(request,
+                    f'Sprint "{sprint.name}" closed — {moved_count} ticket(s) moved to '
+                    f'"{target_sprint.name}", {closed_count} ticket(s) closed.')
+            else:
+                count = non_closed.count()
+                non_closed.update(status='closed')
+                messages.success(request,
+                    f'Sprint "{sprint.name}" closed — {count} ticket(s) marked as closed.')
+        else:
+            count = non_closed.count()
+            non_closed.update(status='closed')
+            messages.success(request,
+                f'Sprint "{sprint.name}" closed — {count} ticket(s) marked as closed.')
+
         sprint.status = 'completed'
         sprint.save()
-        # Passer les tickets non-terminés en "closed" (ils restent dans le sprint)
-        Ticket.objects.filter(sprint=sprint).exclude(status='closed').update(status='closed')
-        messages.success(request, f'Sprint "{sprint.name}" terminé. Tous les tickets sont maintenant closed.')
+
     return redirect('project-detail', pk=sprint.project.pk)
 
 
@@ -553,3 +609,56 @@ def announcement_delete(request, pk):
     announcement.delete()
     messages.success(request, "Announcement deleted.")
     return redirect('project-detail', pk=project_pk)
+
+@login_required
+def manage_sprint_members(request, sprint_pk):
+    sprint = get_object_or_404(Sprint, pk=sprint_pk)
+    project = sprint.project
+    
+
+    role = get_user_role(request.user, project)
+    if not (request.user.is_staff or role == 'contributor'):
+        messages.error(request, "Accès refusé.")
+        return redirect('project-detail', pk=project.pk)
+
+    
+    project_members = project.memberships.select_related('user')
+    sprint_members = sprint.sprint_members.all()
+    
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        capacity = request.POST.get('capacity', 0)
+        action = request.POST.get('action')
+
+        if action == 'add_or_update':
+            member_user = get_object_or_404(User, pk=user_id)
+            
+           
+            raw_capacity = request.POST.get('capacity')
+            if not raw_capacity or raw_capacity.strip() == "":
+                capacity = 0
+            else:
+                try:
+                    capacity = int(raw_capacity)
+                except ValueError:
+                    capacity = 0
+            
+
+            SprintMember.objects.update_or_create(
+                sprint=sprint, 
+                user=member_user,
+                defaults={'individual_capacity': capacity}
+            )
+            messages.success(request, f"Capacity updated for {member_user.username}")
+        
+        elif action == 'remove':
+            SprintMember.objects.filter(sprint=sprint, user_id=user_id).delete()
+            messages.success(request, "Membre retiré du sprint")
+
+        return redirect('manage-sprint-members', sprint_pk=sprint.pk)
+
+    return render(request, 'blog/manage_sprint_members.html', {
+        'sprint': sprint,
+        'project_members': project_members,
+        'sprint_members': sprint_members,
+    })
