@@ -228,12 +228,13 @@ class Announcement(models.Model):
         ('danger',  'Urgent'),
     ]
  
-    project    = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='announcements')
+    project    = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank = True, related_name='announcements')
     message    = models.TextField(verbose_name="Message")
     type       = models.CharField(max_length=10, choices=TYPE_CHOICES, default='info', verbose_name="Type")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='announcements')
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateField(null=True, blank=True, verbose_name="Expires on")
+
  
     class Meta:
         ordering = ['-created_at']

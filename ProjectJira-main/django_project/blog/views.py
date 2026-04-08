@@ -37,11 +37,35 @@ def home(request):
     
     projects = Project.objects.filter(memberships__user=request.user) | Project.objects.filter(created_by=request.user)
     my_tickets = Ticket.objects.filter(assignee=request.user).exclude(status__in=['closed', 'cancelled'])
+    announcements = Announcement.objects.all().order_by('-created_at')
     
     return render(request, 'blog/home.html', {
         'projects': projects.distinct(),
-        'my_tickets': my_tickets
+        'my_tickets': my_tickets,
+        'announcements': announcements,
     })
+
+def home_announcement_create(request):
+    if request.method == "POST" and request.user.is_staff:
+        Announcement.objects.create(
+            message=request.POST["message"],
+            type=request.POST["type"],
+            created_by=request.user,
+            expires_at=request.POST.get("expires_at") or None,
+        )
+
+    return redirect("blog-home") 
+
+@login_required
+def announcement_delete(request, pk):
+    announcement = get_object_or_404(Announcement, pk=pk)
+    
+    
+    if request.user.is_staff:
+        announcement.delete()
+    
+
+    return redirect('blog-home')
 
 def kanban_board(request):
     return render(request, 'blog/kanban.html', {
@@ -440,6 +464,23 @@ def sprint_start(request, pk):
     return redirect('project-detail', pk=sprint.project.pk)
 
 
+def sprint_close_preview(request, pk):
+    sprint = get_object_or_404(Sprint, id=pk)
+
+    # ✅ Utiliser 'number' au lieu de 'human_id' (qui est un @property, pas un champ DB)
+    tickets = list(
+        sprint.tickets.exclude(status='closed').values(
+            'id', 'number', 'title', 'ticket_type', 'status', 'priority'
+        )
+    )
+
+    # Reconstituer human_id manuellement depuis 'number'
+    for t in tickets:
+        t['human_id'] = f"#{t['number']}"   # ← adapte le format si besoin (ex: "PROJ-42")
+
+    return JsonResponse({'tickets': tickets})
+
+
 def sprint_close(request, pk):
     sprint = get_object_or_404(Sprint, pk=pk)
     role = get_user_role(request.user, sprint.project)
@@ -452,22 +493,38 @@ def sprint_close(request, pk):
         messages.warning(request, "This sprint is not active.")
         return redirect('project-detail', pk=sprint.project.pk)
 
-    action = request.GET.get('action', 'close_all')
-    target_id = request.GET.get('target')
+    if request.method == 'POST':
+        action    = request.POST.get('action', 'close_all')
+        target_id = request.POST.get('target_sprint')
+        move_ids  = request.POST.getlist('move_tickets')  # checkboxes
 
-    non_closed = sprint.tickets.exclude(status='closed')
+        non_closed = sprint.tickets.exclude(status='closed')
 
-    if action == 'move' and target_id:
-        target_sprint = get_object_or_404(Sprint, pk=target_id, project=sprint.project)
-        non_closed.update(sprint=target_sprint)
-        messages.success(request, f'Sprint "{sprint.name}" closed — {non_closed.count()} ticket(s) moved to "{target_sprint.name}".')
-    else:
-        count = non_closed.count()
-        non_closed.update(status='closed')
-        messages.success(request, f'Sprint "{sprint.name}" closed — {count} ticket(s) marked as closed.')
+        if action == 'move' and target_id:
+            target_sprint = get_object_or_404(Sprint, pk=target_id, project=sprint.project)
+            if move_ids:
+                to_move  = non_closed.filter(id__in=move_ids)
+                to_close = non_closed.exclude(id__in=move_ids)
+                moved_count  = to_move.count()
+                closed_count = to_close.count()
+                to_move.update(sprint=target_sprint)
+                to_close.update(status='closed')
+                messages.success(request,
+                    f'Sprint "{sprint.name}" closed — {moved_count} ticket(s) moved to '
+                    f'"{target_sprint.name}", {closed_count} ticket(s) closed.')
+            else:
+                count = non_closed.count()
+                non_closed.update(status='closed')
+                messages.success(request,
+                    f'Sprint "{sprint.name}" closed — {count} ticket(s) marked as closed.')
+        else:
+            count = non_closed.count()
+            non_closed.update(status='closed')
+            messages.success(request,
+                f'Sprint "{sprint.name}" closed — {count} ticket(s) marked as closed.')
 
-    sprint.status = 'completed'
-    sprint.save()
+        sprint.status = 'completed'
+        sprint.save()
 
     return redirect('project-detail', pk=sprint.project.pk)
 
@@ -541,7 +598,6 @@ class EpicDeleteView(AdminRequiredMixin, DeleteView):
 def announcement_create(request, project_pk):
     project = get_object_or_404(Project, pk=project_pk)
  
-    # Seul un admin/staff peut créer une annonce
     if not request.user.is_staff:
         messages.error(request, "Only admins can post announcements.")
         return redirect('project-detail', pk=project_pk)
@@ -566,17 +622,22 @@ def announcement_create(request, project_pk):
  
 @login_required
 def announcement_delete(request, pk):
-    from .models import Announcement
     announcement = get_object_or_404(Announcement, pk=pk)
- 
-    if not request.user.is_staff:
-        messages.error(request, "Only admins can delete announcements.")
-        return redirect('project-detail', pk=announcement.project.pk)
- 
-    project_pk = announcement.project.pk
-    announcement.delete()
-    messages.success(request, "Announcement deleted.")
-    return redirect('project-detail', pk=project_pk)
+    
+    # CORRECTION : Vérifiez si project existe avant d'accéder à .pk
+    if announcement.project:
+        project = announcement.project
+    else:
+        project = None
+    
+    if request.user.is_staff:
+        announcement.delete()
+    
+    # Redirection conditionnelle
+    if project:
+        return redirect('project-detail', pk=project.pk)
+    else:
+        return redirect('blog-home')
 
 @login_required
 def manage_sprint_members(request, sprint_pk):
