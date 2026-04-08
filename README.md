@@ -20,16 +20,13 @@ Ouvrir “SQL Shell (psql)”.
 Répondre comme suit :
 
 Server [localhost]: → ENTER
-
 Database [postgres]: → ENTER
-
 Port [5432]: → ENTER
-
 Username [postgres]: → postgres
-
 Password: → votre mot de passe
 
-Si tout fonctionne : postgres=#
+Si tout fonctionne :
+postgres=#
 
 ------------------------------------------------------------------------
 
@@ -53,7 +50,8 @@ GRANT ALL PRIVILEGES ON DATABASE project_management_db TO pm_user;
 
 6)  VÉRIFIER
 
-Vous devez voir : project_management_db
+Vous devez voir :
+project_management_db
 
 ------------------------------------------------------------------------
 
@@ -65,10 +63,6 @@ Vous devez voir : project_management_db
 
 ouvrir un terminal
 
-pip install -r requirements.txt
-
-Si besoin :
-
 pip install django psycopg2-binary django-crispy-forms crispy-bootstrap4
 pillow
 
@@ -76,7 +70,8 @@ pillow
 
 9)  MIGRATIONS
 
-python manage.py makemigrations python manage.py migrate
+python manage.py makemigrations
+python manage.py migrate
 
 ------------------------------------------------------------------------
 
@@ -86,7 +81,27 @@ python manage.py loaddata initial_data.json
 
 ------------------------------------------------------------------------
 
-11) LANCER LE PROJET
+11) CONFIGURER LES MOTS DE PASSE (IMPORTANT)
+
+Après avoir chargé les données, exécuter :
+
+python manage.py shell
+
+Puis :
+
+from django.contrib.auth.models import User
+
+u = User.objects.get(username=“eloise”) u.set_password(“1234”) u.save()
+
+u = User.objects.get(username=“gregory”) u.set_password(“1234”) u.save()
+
+Quitter avec :
+
+exit()
+
+------------------------------------------------------------------------
+
+12) LANCER LE PROJET
 
 python manage.py runserver
 
@@ -98,13 +113,17 @@ Admin : http://127.0.0.1:8000/admin
 
 COMPTES DE DÉMONSTRATION
 
-Administrateur : username : eloise password : 1234
+Administrateur :
+username : eloise
+password : 1234
 
-Utilisateur standard : username : gregory password : 1234
+Utilisateur standard :
+username : gregory
+password : 1234
 
 ------------------------------------------------------------------------
 
 RÔLES
 
-Eloise : administrateur (gestion complète des projets) Gregory :
-utilisateur standard (accès limité)
+Eloise : administrateur (gestion complète des projets)
+Gregory : utilisateur standard (accès limité)
