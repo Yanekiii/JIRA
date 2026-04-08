@@ -1,3 +1,4 @@
+appuyer sur l’icône en forme de crayon à droite et d’ouvrir correctement le fichier.
 INSTALLATION DU PROJET (POSTGRESQL + DJANGO)
 
 Le projet est configuré pour utiliser PostgreSQL.
