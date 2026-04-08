@@ -18,7 +18,6 @@ class Project(models.Model):
     end_date        = models.DateField()
     sprint_duration = models.PositiveIntegerField(default=14)
     workload_unit   = models.CharField(max_length=2, choices=WORKLOAD_UNIT_CHOICES, default='sp')
-    capacity        = models.PositiveIntegerField(null=True, blank=True)
     created_by      = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_projects')
 
     def __str__(self):
