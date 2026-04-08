@@ -28,6 +28,9 @@ class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
 def about(request):
     return render(request, 'blog/about.html', {'title': 'About'})
 
+def guide(request):
+    return render(request, 'blog/guide.html')
+
 def home(request):
     if not request.user.is_authenticated:
         return render(request, 'blog/home.html')

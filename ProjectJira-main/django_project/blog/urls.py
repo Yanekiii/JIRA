@@ -10,6 +10,7 @@ from . import views
 urlpatterns = [
     path('', views.home, name='blog-home'),
     path('about/', views.about, name='blog-about'),
+    path('guide/', views.guide, name='guide'),
     path('kanban/', views.kanban_board, name='kanban-board'),
 
     # Tickets
