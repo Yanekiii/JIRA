@@ -127,7 +127,7 @@
           </div>
           {% else %}
           <p class="text-muted mb-0">No members yet.
-            {% if user.is_staff %}<a href="{% url 'manage-members' project.id %}">Add some</a>.{% endif %}
+            {% if user.is_staff %}<a href="{% url 'manage-members' project.id %}">Add a member</a>.{% endif %}
           </p>
           {% endif %}
         </div>

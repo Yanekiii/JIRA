@@ -981,3 +981,15 @@ body::before {
   font-style: italic;
 }
 
+/* ============================================================
+   GUIDE PAGE (custom uniquement pour le guide)
+   ============================================================ */
+
+.container.guide-page h1,
+.container.guide-page h2,
+.container.guide-page h3,
+.container.guide-page h4,
+.container.guide-page h5,
+.container.guide-page h6 {
+  color: #4B0082 !important;
+}

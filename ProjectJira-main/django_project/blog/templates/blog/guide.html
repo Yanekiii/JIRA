@@ -1,168 +1,190 @@
 {% extends "blog/base.html" %}
+{% load static %}
 {% block content %}
+<style>
+.guide-page h1,
+.guide-page h2,
+.guide-page h3,
+.guide-page h4,
+.guide-page h5,
+.guide-page h6 {
+    color: #4B0082 !important;
+}
+</style>
 
-<div class="container mt-4 mb-5">
-    <h1 class="mb-4">📘 Guide pratique – BENYS</h1>
-    <p class="text-muted">Comment utiliser l'application étape par étape</p>
-
-    <hr>
-
-    <!-- LOGIN -->
-    <h3 class="mt-4">🔐 Se connecter à l’application</h3>
-    <p>Arrivez sur la page d’accueil <strong>“Welcome to BENYS”</strong></p>
-    <ul>
-        <li>Entrez votre <strong>nom d’utilisateur</strong></li>
-        <li>Entrez votre <strong>mot de passe</strong></li>
-        <li>Cliquez sur <strong>Login</strong></li>
-    </ul>
-    <p>👉 Vous êtes redirigé vers votre <strong>Dashboard</strong></p>
-
+<div class="container mt-4 mb-5 guide-page">
+    <h1 class="mb-4">Practical Guide – BENYS</h1>
+    <p class="text-muted">How to use the application step by step</p>
     <hr>
 
     <!-- DASHBOARD -->
-    <h3>📊 Comprendre le Dashboard</h3>
+    <h3>Understanding the Dashboard</h3>
+
+    <div class="text-center my-3">
+        <img src="{% static 'blog/images/myProjects.png' %}" 
+            class="img-fluid rounded shadow">
+    </div>
+
     <ul>
-        <li>📁 À gauche → vos <strong>projets</strong></li>
-        <li>📝 À droite → vos <strong>tickets assignés</strong></li>
-    </ul>
-    <p>👉 Cliquez sur :</p>
-    <ul>
-        <li>un projet → voir ses détails</li>
-        <li>un ticket → voir/modifier ses informations</li>
+        <li>On the left → your <strong>projects</strong></li>
+        <li>On the right → your <strong>assigned tasks</strong></li>
     </ul>
 
+    <p>Click on:</p>
+
+    <ul>
+        <li>a project → to see its details</li>
+        <li>a task → to view/edit its information</li>
+    </ul>
     <hr>
 
     <!-- PROJECTS -->
-    <h3>📂 Accéder à ses projets</h3>
-    <p>Cliquez sur <strong>Projects</strong> (en haut)</p>
-    <p>👉 Vous voyez tous vos projets</p>
-    <p>👉 Cliquez sur un projet pour l’ouvrir</p>
+    <h3>Access your projects</h3>
+    <p>Click on <strong>Projects</strong> (in the top blue bar)</p>
 
+    <div class="text-center my-3">
+        <img src="{% static 'blog/images/Projects.png' %}" 
+            class="img-fluid rounded shadow">
+    </div>
+
+    <p>You will see all your projects</p>
+    <p>Click on <strong>a project</strong> to open it or click the <strong>OPEN</strong> button</p>
     <hr>
 
     <!-- PERMISSIONS -->
-    <h3>⚠️ Permissions</h3>
-    <p><strong>Utilisateur standard :</strong></p>
+    <h3>Permissions</h3>
+    <p><strong>A standard user can only:</strong></p>
     <ul>
-        <li>✔ Voir projets</li>
-        <li>✔ Voir tickets</li>
-        
+        <li>View projects they are a member of</li>
+        <li>View tasks in those projects</li>
     </ul>
-    <p>👉 L’admin doit vous ajouter à un projet pour plus de droits</p>
-
+    <p>An administrator must grant you additional permissions to access more features.</p>
     <hr>
 
     <!-- ADMIN -->
-    <h2 class="mt-5">👑 Guide Admin</h2>
+    <h2 class="mt-5">Admin Guide</h2>
 
-    <h4>➕ Créer un projet</h4>
+    <h4>Create a project</h4>
     <ul>
-        <li>Aller dans <strong>Projects</strong></li>
-        <li>Cliquer sur <strong>+ New Project</strong></li>
-        <li>Remplir les informations</li>
-        <li>Valider</li>
+        <li>Click <strong>+ New Project</strong></li>
+        <li>Fill in the information</li>
+        <li>Validate</li>
     </ul>
 
-    <h4>👥 Gérer les membres</h4>
+    <h4>Manage members</h4>
     <ul>
-        <li>Ouvrir un projet</li>
-        <li>Aller dans <strong>Manage Members</strong></li>
-        <li>Ajouter un utilisateur</li>
-        <li>Choisir un rôle :
+        <li>Open a project</li>
+        <li>Go to <strong>Team Members</strong> and click either <strong>Manage</strong> or <strong>Add some</strong></li>
+        
+        <div class="my-3">
+            <img src="{% static 'blog/images/add_member.png' %}" 
+                class="img-fluid rounded shadow">
+        </div>
+        
+        <div class="text-center my-3">
+            <img src="{% static 'blog/images/save_member.png' %}" 
+                class="img-fluid rounded shadow">
+        </div>
+
+        <li>Add a user</li>
+        <li>Choose a role:
             <ul>
                 <li>Contributor</li>
-                <li>Read-only</li>
+                <li>Read-only<br>You can always change the role of a member any time</li>
             </ul>
         </li>
     </ul>
 
-    <h4>❌ Supprimer un utilisateur</h4>
-    <p>👉 Résultat :</p>
+    <h4>Remove a user</h4>
+    <p>Result:</p>
     <ul>
-        <li>L’utilisateur perd l’accès</li>
-        <li>Ses tickets restent mais deviennent <strong>non assignés</strong></li>
+        <li>The user loses access</li>
+        <li>Their tickets remain but become <strong>unassigned</strong> (the user will no longer see them)</li>
     </ul>
 
     <hr>
 
     <!-- SPRINT -->
-    <h3>🏃‍♂️ Créer et gérer un Sprint</h3>
+    <h3>Create and manage a Sprint</h3>
 
-    <h4>➕ Créer</h4>
+    <h4>Create</h4>
     <ul>
-        <li>Ouvrir un projet</li>
-        <li>Cliquer sur <strong>Create Sprint</strong></li>
-        <li>Nom + objectif + date début</li>
+        <li>Open a project</li>
+        <li>Click <strong>+ New Sprint</strong></li>
+
+        <div class="my-3">
+            <img src="{% static 'blog/images/btn.png' %}" 
+                class="img-fluid rounded shadow">
+        </div>
+
+        <p>
+            You will need to add:
+            <br>Name + description (optional) + start date + duration (14 days by default, but you can change it)
+            <br>The end date is calculated automatically
+        </p>
+
+        <div class="my-3">
+            <img src="{% static 'blog/images/new_sprint.png' %}" 
+                class="img-fluid rounded shadow">
+        </div>
     </ul>
-    <p>👉 Fin automatique (14 jours), possibilité de changer la durée du sprint</p>
 
-    <h4>▶️ Start</h4>
-    <p>👉 Le sprint devient actif</p>
+    <h4>Start</h4>
+    <p>The sprint becomes active. In the left sidebar, you can click to view the active sprint in the <strong>KANBAN</strong></p>
+        <div class="my-3">
+            <img src="{% static 'blog/images/sprint_start.png' %}" 
+                class="img-fluid rounded shadow">
+        </div>
 
-    <h4>⛔ Close</h4>
-    <p>👉 Sprint terminé définitivement</p>
+    <h4>Close</h4>
+    <p>The sprint is permanently closed. Unfinished tasks will be transferred to the next sprint</p>
 
+    <div class="my-3">
+        <img src="{% static 'blog/images/close_sprint.png' %}" 
+            class="img-fluid rounded shadow">
+    </div>
     <hr>
 
     <!-- TICKET -->
-    <h3>🎫 Créer un Ticket</h3>
-    <ul>
-        <li>Type : Bug / Task / Story</li>
-        <li>Titre + description</li>
-        <li>Options :
-            <ul>
-                <li>Sprint</li>
-                <li>Epic</li>
-                <li>Ticket lié</li>
-                <li>Priorité</li>
-                <li>Workload</li>
-                <li>Assigné</li>
-            </ul>
-        </li>
-    </ul>
+    <h3>Create a Ticket</h3>
+    <p>You chose the type of the ticket and add the additionnal informations</p>
 
-    <h4>📌 Assigner</h4>
-    <p>Choisir un utilisateur dans <strong>Assignee</strong></p>
-
+    <div class="my-3">
+        <img src="{% static 'blog/images/tickets.png' %}" 
+            class="img-fluid rounded shadow"
+            style="max-height: 300px;">
+    </div>
     <hr>
 
     <!-- BACKLOG -->
-    <h3>📦 Product Backlog</h3>
+    <h3>Product Backlog</h3>
     <ul>
-        <li>Voir tâches non planifiées</li>
-        <li>Organiser les priorités</li>
+        <li>View unplanned tasks</li>
+        <li>Organize priorities</li>
     </ul>
 
     <hr>
 
     <!-- KANBAN -->
-    <h3>📊 Kanban (Sprint)</h3>
-    <p>Colonnes :</p>
-    <ul>
-        <li>🆕 New</li>
-        <li>🔄 Active</li>
-        <li>✅ Closed</li>
-    </ul>
-    <p>👉 Glisser-déposer les tickets</p>
-
+    <h3>Kanban (Sprint)</h3>
+    <p>Drag and drop tickets</p>
+    <div class="my-3">
+        <img src="{% static 'blog/images/kanban.png' %}" 
+            class="img-fluid rounded shadow"
+            style="max-height: 300px;">
+    </div>
     <hr>
 
     <!-- EPIC -->
-    <h3>🎯 Epic</h3>
-    <ul>
-        <li>Créer un epic</li>
-        <li>Ajouter couleur + dates</li>
-        <li>Regrouper plusieurs tickets</li>
-    </ul>
-
+    <h3>Epic</h3>
+        <p>Create an epic : <br>you can add color + dates<br>Group multiple tickets</p>
     <hr>
 
     <!-- NAVIGATION -->
-    <h3>📑 Navigation rapide</h3>
+    <h3>Quick navigation (left sidebar)</h3>
     <ul>
-        <li>Overview → résumé</li>
-        <li>Backlog → tâches</li>
+        <li>Overview → summary</li>
+        <li>Backlog → tasks</li>
         <li>Active Sprint → kanban</li>
         <li>Issues → tickets</li>
         <li>Epic → epics</li>
@@ -171,13 +193,13 @@
     <hr>
 
     <!-- PROFILE -->
-    <h3>👤 Profil</h3>
-    <ul>
-        <li>Nom</li>
-        <li>Email</li>
-        <li>Photo</li>
-    </ul>
-
+    <h3>Profile</h3>
+    <p>You can always change your picture by chosing a file</p>
+    <div class="my-3">
+        <img src="{% static 'blog/images/profile.png' %}" 
+            class="img-fluid rounded shadow"
+            style="max-height: 300px;">
+    </div>
 </div>
 
 {% endblock %}
