@@ -51,6 +51,9 @@ GRANT ALL PRIVILEGES ON DATABASE project_management_db TO pm_user;
 
 6)  VÉRIFIER
 
+faire:
+\l 
+
 Vous devez voir :
 project_management_db
 
@@ -62,10 +65,13 @@ project_management_db
 
 8)  INSTALLER LES DÉPENDANCES
 
-ouvrir un terminal
+ouvrir un terminal dans le dossier ou se trouve manage.py
 
-pip install django psycopg2-binary django-crispy-forms crispy-bootstrap4
-pillow
+pip install django
+pip install psycopg2-binary
+pip install django-crispy-forms
+pip install crispy-bootstrap4
+pip install pillow
 
 ------------------------------------------------------------------------
 
