@@ -224,28 +224,20 @@ class Announcement(models.Model):
     TYPE_CHOICES = [
         ('info',    'Info'),
         ('warning', 'Warning'),
-        ('success', 'Success'),
         ('danger',  'Urgent'),
+        ('success', 'Success'),
     ]
- 
-    project    = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank = True, related_name='announcements')
-    message    = models.TextField(verbose_name="Message")
-    type       = models.CharField(max_length=10, choices=TYPE_CHOICES, default='info', verbose_name="Type")
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='announcements')
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateField(null=True, blank=True, verbose_name="Expires on")
 
- 
-    class Meta:
-        ordering = ['-created_at']
- 
-    def __str__(self):
-        return f"[{self.project.code}] {self.message[:50]}"
- 
-    @property
-    def is_active(self):
-        from datetime import date
-        if self.expires_at is None:
-            return True
-        return self.expires_at >= date.today()
+    message    = models.TextField()
+    type       = models.CharField(max_length=20, choices=TYPE_CHOICES, default='info')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)   # date de fin optionnelle
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    project    = models.ForeignKey(               # ← null=True ajouté ici
+        'Project',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='announcements'
+    )
  

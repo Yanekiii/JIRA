@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from .models import Ticket, Project, Sprint, Epic, ProjectMembership, Announcement, SprintMember
 from django.db.models import Q, Case, When, Value, IntegerField
 from datetime import timedelta,date
+from django.utils import timezone
 
 
 # ── Helper ────────────────────────────────────────────────────────────────────
@@ -34,37 +35,58 @@ def guide(request):
 def home(request):
     if not request.user.is_authenticated:
         return render(request, 'blog/home.html')
-    
-    projects = Project.objects.filter(memberships__user=request.user) | Project.objects.filter(created_by=request.user)
-    my_tickets = Ticket.objects.filter(assignee=request.user).exclude(status__in=['closed', 'cancelled'])
-    announcements = Announcement.objects.all().order_by('-created_at')
-    
+
+    now = timezone.now()
+
+    projects = (
+        Project.objects.filter(memberships__user=request.user)
+        | Project.objects.filter(created_by=request.user)
+    ).distinct()
+
+    my_tickets = Ticket.objects.filter(
+        assignee=request.user
+    ).exclude(status__in=['closed', 'cancelled'])
+
+    # Annonces globales (pas liées à un projet) non expirées
+    announcements = Announcement.objects.filter(
+        project__isnull=True
+    ).filter(
+        Q(expires_at__isnull=True) | Q(expires_at__gt=now)
+    ).order_by('-created_at')
+
     return render(request, 'blog/home.html', {
-        'projects': projects.distinct(),
+        'projects': projects,
         'my_tickets': my_tickets,
         'announcements': announcements,
+        'now': now,   # utilisé dans le template pour le min= du datetime-local
     })
 
 def home_announcement_create(request):
-    if request.method == "POST" and request.user.is_staff:
-        Announcement.objects.create(
-            message=request.POST["message"],
-            type=request.POST["type"],
-            created_by=request.user,
-            expires_at=request.POST.get("expires_at") or None,
-        )
+    if request.method == 'POST' and request.user.is_staff:
+        message      = request.POST.get('message', '').strip()
+        ann_type     = request.POST.get('type', 'info')
+        expires_date = request.POST.get('expires_date') or None
+        expires_time = request.POST.get('expires_time') or '00:00'
 
-    return redirect("blog-home") 
+        expires_at = None
+        if expires_date:
+            try:
+                import datetime
+                naive_dt = datetime.datetime.strptime(
+                    f"{expires_date} {expires_time}", "%Y-%m-%d %H:%M"
+                )
+                expires_at = timezone.make_aware(naive_dt)
+            except (ValueError, TypeError):
+                expires_at = None
 
-@login_required
-def announcement_delete(request, pk):
-    announcement = get_object_or_404(Announcement, pk=pk)
-    
-    
-    if request.user.is_staff:
-        announcement.delete()
-    
-
+        if message:
+            Announcement.objects.create(
+                message    = message,
+                type       = ann_type,
+                created_by = request.user,
+                project    = None,
+                expires_at = expires_at,
+            )
     return redirect('blog-home')
 
 def kanban_board(request):
