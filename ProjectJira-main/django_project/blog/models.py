@@ -18,6 +18,7 @@ class Project(models.Model):
     end_date        = models.DateField()
     sprint_duration = models.PositiveIntegerField(default=14)
     workload_unit   = models.CharField(max_length=2, choices=WORKLOAD_UNIT_CHOICES, default='sp')
+    capacity        = models.PositiveIntegerField(null=True, blank=True)
     created_by      = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_projects')
 
     def __str__(self):
@@ -228,13 +229,12 @@ class Announcement(models.Model):
         ('danger',  'Urgent'),
     ]
  
-    project    = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='announcements')
+    project    = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank = True, related_name='announcements')
     message    = models.TextField(verbose_name="Message")
     type       = models.CharField(max_length=10, choices=TYPE_CHOICES, default='info', verbose_name="Type")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='announcements')
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateField(null=True, blank=True, verbose_name="Expires on")
-    
 
  
     class Meta:

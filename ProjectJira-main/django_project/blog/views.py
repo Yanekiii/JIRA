@@ -37,11 +37,35 @@ def home(request):
     
     projects = Project.objects.filter(memberships__user=request.user) | Project.objects.filter(created_by=request.user)
     my_tickets = Ticket.objects.filter(assignee=request.user).exclude(status__in=['closed', 'cancelled'])
+    announcements = Announcement.objects.all().order_by('-created_at')
     
     return render(request, 'blog/home.html', {
         'projects': projects.distinct(),
-        'my_tickets': my_tickets
+        'my_tickets': my_tickets,
+        'announcements': announcements,
     })
+
+def home_announcement_create(request):
+    if request.method == "POST" and request.user.is_staff:
+        Announcement.objects.create(
+            message=request.POST["message"],
+            type=request.POST["type"],
+            created_by=request.user,
+            expires_at=request.POST.get("expires_at") or None,
+        )
+
+    return redirect("blog-home") 
+
+@login_required
+def announcement_delete(request, pk):
+    announcement = get_object_or_404(Announcement, pk=pk)
+    
+    
+    if request.user.is_staff:
+        announcement.delete()
+    
+
+    return redirect('blog-home')
 
 def kanban_board(request):
     return render(request, 'blog/kanban.html', {
@@ -598,17 +622,22 @@ def announcement_create(request, project_pk):
  
 @login_required
 def announcement_delete(request, pk):
-    from .models import Announcement
     announcement = get_object_or_404(Announcement, pk=pk)
- 
-    if not request.user.is_staff:
-        messages.error(request, "Only admins can delete announcements.")
-        return redirect('project-detail', pk=announcement.project.pk)
- 
-    project_pk = announcement.project.pk
-    announcement.delete()
-    messages.success(request, "Announcement deleted.")
-    return redirect('project-detail', pk=project_pk)
+    
+    # CORRECTION : Vérifiez si project existe avant d'accéder à .pk
+    if announcement.project:
+        project = announcement.project
+    else:
+        project = None
+    
+    if request.user.is_staff:
+        announcement.delete()
+    
+    # Redirection conditionnelle
+    if project:
+        return redirect('project-detail', pk=project.pk)
+    else:
+        return redirect('blog-home')
 
 @login_required
 def manage_sprint_members(request, sprint_pk):

@@ -54,5 +54,7 @@ urlpatterns = [
     # Announcements
     path('project/<int:project_pk>/announcement/new/', views.announcement_create, name='announcement-create'),
     path('announcement/<int:pk>/delete/', views.announcement_delete, name='announcement-delete'),
+    path("announcement/home/create/", views.home_announcement_create, name="home-announcement-create"),
+    
     
 ]
