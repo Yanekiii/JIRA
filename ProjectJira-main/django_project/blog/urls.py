@@ -43,6 +43,7 @@ urlpatterns = [
     path('sprint/<int:pk>/close/', views.sprint_close, name='sprint-close'),
     path('sprint/<int:pk>/kanban/', views.sprint_kanban, name='sprint-kanban'),
     path('sprint/<int:sprint_pk>/members/', views.manage_sprint_members, name='manage-sprint-members'),
+    path('sprint/<int:pk>/close/preview/', views.sprint_close_preview, name='sprint-close-preview'),
 
     # Epics
     path('project/<int:project_pk>/epic/new/', EpicCreateView.as_view(), name='epic-create'),
