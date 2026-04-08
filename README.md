@@ -63,6 +63,8 @@ Vous devez voir : project_management_db
 
 8)  INSTALLER LES DÉPENDANCES
 
+ouvrir un terminal
+
 pip install -r requirements.txt
 
 Si besoin :
