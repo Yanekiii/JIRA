@@ -250,7 +250,7 @@
 
             <!-- Close all (always visible) -->
             <button type="button" class="btn btn-dark rounded-3 text-start px-4 py-3" id="closeAllBtn">
-              <div class="fw-bold">✅ Close all remaining tickets</div>
+              <div class="fw-bold">Close all remaining tickets</div>
               <small class="opacity-75">All tickets will be moved to 'Closed'.</small>
             </button>
 
@@ -263,7 +263,7 @@
                   class="btn btn-outline-primary rounded-3 text-start px-4 py-3 mb-1 w-100 move-to-sprint-btn"
                   data-sprint-id="{{ s.id }}"
                   data-sprint-name="{{ s.name }}">
-                  <div class="fw-bold">🔄 Move selected → {{ s.display_name|default:s.name }}</div>
+                  <div class="fw-bold">Move selected → {{ s.display_name|default:s.name }}</div>
                   <small class="opacity-75">{{ s.start_date }} → {{ s.end_date }} <br>
                   Unchecked tickets will be closed; checked tickets will transition to {{ s.display_name|default:s.name }}.</small>
                 </button>
