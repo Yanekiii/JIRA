@@ -71,6 +71,7 @@ pillow
 9)  MIGRATIONS
 
 python manage.py makemigrations
+
 python manage.py migrate
 
 ------------------------------------------------------------------------
