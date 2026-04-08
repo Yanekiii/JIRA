@@ -1,136 +1,108 @@
-INSTALLATION DE LA BASE DE DONNÉES POSTGRESQL POUR LE PROJET
+INSTALLATION DU PROJET (POSTGRESQL + DJANGO)
 
-Le code du projet est déjà configuré pour utiliser PostgreSQL.
-Chaque membre doit seulement créer la base de données sur sa machine.
+Le projet est configuré pour utiliser PostgreSQL.
 
-------------------------------------------------------------
+------------------------------------------------------------------------
 
-1) INSTALLER POSTGRESQL
+1)  INSTALLER POSTGRESQL
 
 Télécharger et installer PostgreSQL.
-Pendant l'installation :
-- garder le port 5432
-- retenir le mot de passe du compte postgres
 
-------------------------------------------------------------
+Pendant l’installation : - garder le port 5432 - retenir le mot de passe
+du compte postgres
 
-2) OUVRIR SQL SHELL
+------------------------------------------------------------------------
 
-Ouvrir "SQL Shell (psql)".
+2)  OUVRIR SQL SHELL
 
-Quand il demande :
+Ouvrir “SQL Shell (psql)”.
 
-Server [localhost]:
-→ appuyer sur ENTER
+Répondre comme suit :
 
-Database [postgres]:
-→ appuyer sur ENTER
+Server [localhost]: → ENTER
 
-Port [5432]:
-→ appuyer sur ENTER
+Database [postgres]: → ENTER
 
-Username [postgres]:
-→ écrire : postgres
+Port [5432]: → ENTER
 
-Password:
-→ entrer le mot de passe choisi pendant l'installation
+Username [postgres]: → postgres
 
-Si tout fonctionne vous verrez :
+Password: → votre mot de passe
 
-postgres=#
+Si tout fonctionne : postgres=#
 
-------------------------------------------------------------
+------------------------------------------------------------------------
 
-3) CRÉER L'UTILISATEUR DU PROJET
+3)  CRÉER L’UTILISATEUR
 
-Dans SQL Shell taper :
+CREATE USER pm_user WITH PASSWORD ‘pm_password’;
 
-CREATE USER pm_user WITH PASSWORD 'pm_password';
+------------------------------------------------------------------------
 
-Puis ENTER.
-
-------------------------------------------------------------
-
-4) CRÉER LA BASE DE DONNÉES
-
-Toujours dans SQL Shell taper :
+4)  CRÉER LA BASE DE DONNÉES
 
 CREATE DATABASE project_management_db OWNER pm_user;
 
-Puis ENTER.
+------------------------------------------------------------------------
 
-------------------------------------------------------------
-
-5) DONNER LES DROITS
-
-Toujours dans SQL Shell :
+5)  DONNER LES DROITS
 
 GRANT ALL PRIVILEGES ON DATABASE project_management_db TO pm_user;
 
-Puis ENTER.
+------------------------------------------------------------------------
 
-------------------------------------------------------------
+6)  VÉRIFIER
 
-6) VÉRIFIER QUE LA BASE EXISTE
+Vous devez voir : project_management_db
 
-Taper :
+------------------------------------------------------------------------
 
-\l
+7)  QUITTER
 
-Dans la liste vous devez voir :
+------------------------------------------------------------------------
 
-project_management_db
-
-------------------------------------------------------------
-
-7) QUITTER SQL SHELL
-
-Taper :
-
-\q
-
-------------------------------------------------------------
-
-8) INSTALLER LES DÉPENDANCES PYTHON
-
-Dans le dossier du projet (là où il y a manage.py) :
+8)  INSTALLER LES DÉPENDANCES
 
 pip install -r requirements.txt
 
-Si le fichier n'existe pas :
+Si besoin :
 
-pip install django psycopg2-binary django-crispy-forms crispy-bootstrap4 pillow
+pip install django psycopg2-binary django-crispy-forms crispy-bootstrap4
+pillow
 
-------------------------------------------------------------
+------------------------------------------------------------------------
 
-9) CRÉER LES TABLES DJANGO
+9)  MIGRATIONS
 
-Toujours dans le dossier du projet :
+python manage.py makemigrations python manage.py migrate
 
-python manage.py makemigrations
-python manage.py migrate
+------------------------------------------------------------------------
 
-------------------------------------------------------------
+10) CHARGER LES DONNÉES DE TEST
 
-10) CRÉER UN COMPTE ADMIN
+python manage.py loaddata initial_data.json
 
-python manage.py createsuperuser
-
-------------------------------------------------------------
+------------------------------------------------------------------------
 
 11) LANCER LE PROJET
 
 python manage.py runserver
 
-Puis ouvrir :
-
 http://127.0.0.1:8000
 
-Admin :
+Admin : http://127.0.0.1:8000/admin
 
-http://127.0.0.1:8000/admin
+------------------------------------------------------------------------
 
-------------------------------------------------------------
+COMPTES DE DÉMONSTRATION
 
-Si le site fonctionne et que vous pouvez créer des utilisateurs ou projets,
-alors PostgreSQL est correctement configuré.
+Administrateur : username : eloise password : 1234
+
+Utilisateur standard : username : gregory password : 1234
+
+------------------------------------------------------------------------
+
+RÔLES
+
+Eloise : administrateur (gestion complète des projets) Gregory :
+utilisateur standard (accès limité)
