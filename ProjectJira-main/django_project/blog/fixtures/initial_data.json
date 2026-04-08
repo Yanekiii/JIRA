@@ -1,0 +1,138 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "eloise",
+      "password": "pbkdf2_sha256$600000$fakehash$fakehash",
+      "is_superuser": true,
+      "is_staff": true,
+      "is_active": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "username": "gregory",
+      "password": "pbkdf2_sha256$600000$fakehash$fakehash",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+
+  {
+    "model": "blog.project",
+    "pk": 1,
+    "fields": {
+      "code": "BENYS",
+      "title": "Projet Agile",
+      "name": "Gestion Jira Like",
+      "description": "Projet de gestion agile",
+      "start_date": "2025-01-01",
+      "end_date": "2025-12-31",
+      "sprint_duration": 14,
+      "workload_unit": "sp",
+      "created_by": 1
+    }
+  },
+
+  {
+    "model": "blog.projectmembership",
+    "pk": 1,
+    "fields": {
+      "project": 1,
+      "user": 2,
+      "role": "contributor"
+    }
+  },
+
+  {
+  "model": "blog.sprint",
+  "pk": 1,
+  "fields": {
+    "project": 1,
+    "name": "Sprint 1",
+    "goal": "Développement initial",
+    "start_date": "2025-01-01",
+    "end_date": "2025-01-14",
+    "status": "active",
+    "global_capacity": 50,
+    "created_at": "2025-01-01T09:00:00Z"
+  }
+  
+  },
+
+  {
+    "model": "blog.sprintmember",
+    "pk": 1,
+    "fields": {
+      "sprint": 1,
+      "user": 2,
+      "individual_capacity": 20
+    }
+  },
+
+  {
+    "model": "blog.epic",
+    "pk": 1,
+    "fields": {
+      "project": 1,
+      "title": "Authentification",
+      "description": "Gestion login",
+      "status": "active",
+      "priority": "high",
+      "color": "#ff0000",
+      "start_date": "2025-01-01",
+      "end_date": "2025-02-01",
+      "created_by": 1
+    }
+  },
+
+  {
+    "model": "blog.ticket",
+    "pk": 1,
+    "fields": {
+      "project": 1,
+      "number": 1,
+      "ticket_type": "story",
+      "epic": 1,
+      "sprint": 1,
+      "title": "Créer login",
+      "description": "Page login",
+      "status": "new",
+      "priority": "high",
+      "reporter": 1,
+      "demandeur": 1,
+      "assignee": 2,
+      "workload_initial": 5,
+      "workload_remaining": 5,
+      "workload_done": 0,
+      "backlog_order": 1
+    }
+  },
+
+  {
+    "model": "blog.ticket",
+    "pk": 2,
+    "fields": {
+      "project": 1,
+      "number": 2,
+      "ticket_type": "task",
+      "epic": 1,
+      "sprint": 1,
+      "title": "Créer dashboard",
+      "description": "Vue principale",
+      "status": "active",
+      "priority": "medium",
+      "reporter": 1,
+      "demandeur": 1,
+      "assignee": 2,
+      "workload_initial": 8,
+      "workload_remaining": 3,
+      "workload_done": 5,
+      "backlog_order": 2
+    }
+  }
+]
