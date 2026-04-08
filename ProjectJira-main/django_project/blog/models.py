@@ -18,7 +18,6 @@ class Project(models.Model):
     end_date        = models.DateField()
     sprint_duration = models.PositiveIntegerField(default=14)
     workload_unit   = models.CharField(max_length=2, choices=WORKLOAD_UNIT_CHOICES, default='sp')
-    capacity        = models.PositiveIntegerField(null=True, blank=True)
     created_by      = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_projects')
 
     def __str__(self):
@@ -83,6 +82,10 @@ class Sprint(models.Model):
         sprint_number = Sprint.objects.filter(project=self.project).order_by('created_at').values_list('id', flat=True)
         index = list(sprint_number).index(self.id) + 1
         return f"Sprint {index}"
+    
+    @property
+    def calculated_capacity(self):
+        return sum(member.individual_capacity for member in self.sprint_members.all())
         
     def save(self, *args, **kwargs):
         if self.status == 'active':
@@ -91,6 +94,13 @@ class Sprint(models.Model):
             ).exclude(pk=self.pk).update(status='completed')
         super().save(*args, **kwargs)
 
+class SprintMember(models.Model):
+    sprint = models.ForeignKey(Sprint, on_delete=models.CASCADE, related_name='sprint_members')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    individual_capacity = models.PositiveIntegerField(default=0) 
+
+    def __str__(self):
+        return f"{self.user.username} - {self.sprint.name} ({self.individual_capacity})"
 
 class Epic(models.Model):
     STATUS_CHOICES = [
@@ -208,3 +218,33 @@ class Ticket(models.Model):
 
     def get_absolute_url(self):
         return reverse('ticket-detail', kwargs={'pk': self.pk})
+    
+
+class Announcement(models.Model):
+    TYPE_CHOICES = [
+        ('info',    'Info'),
+        ('warning', 'Warning'),
+        ('success', 'Success'),
+        ('danger',  'Urgent'),
+    ]
+ 
+    project    = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='announcements')
+    message    = models.TextField(verbose_name="Message")
+    type       = models.CharField(max_length=10, choices=TYPE_CHOICES, default='info', verbose_name="Type")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='announcements')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateField(null=True, blank=True, verbose_name="Expires on")
+ 
+    class Meta:
+        ordering = ['-created_at']
+ 
+    def __str__(self):
+        return f"[{self.project.code}] {self.message[:50]}"
+ 
+    @property
+    def is_active(self):
+        from datetime import date
+        if self.expires_at is None:
+            return True
+        return self.expires_at >= date.today()
+ 

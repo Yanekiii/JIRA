@@ -6,9 +6,9 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from .models import Ticket, Project, Sprint, Epic, ProjectMembership
-from django.db.models import Case, When, Value, IntegerField
-from datetime import timedelta
+from .models import Ticket, Project, Sprint, Epic, ProjectMembership, Announcement, SprintMember
+from django.db.models import Q, Case, When, Value, IntegerField
+from datetime import timedelta,date
 
 
 # ── Helper ────────────────────────────────────────────────────────────────────
@@ -264,12 +264,15 @@ class ProjectListView(LoginRequiredMixin, ListView):
 
 
 class ProjectDetailView(LoginRequiredMixin, DetailView):
+    
     model = Project
     template_name = 'blog/project_detail.html'
 
     def get_context_data(self, **kwargs):
+        
         context = super().get_context_data(**kwargs)
         project = self.get_object()
+        
 
         sprints = project.sprints.prefetch_related('tickets').annotate(
             active_first=Case(
@@ -284,13 +287,16 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
         context['members'] = project.memberships.select_related('user')
         context['active_sprint'] = sprints.filter(status='active').first()
         context['user_role'] = get_user_role(self.request.user, project)
+        context['announcements'] = project.announcements.filter(
+            Q(expires_at__isnull=True) | Q(expires_at__gte=date.today())
+        )
         return context
 
 
 class ProjectCreateView(AdminRequiredMixin, CreateView):
     model = Project
     fields = ['code', 'name', 'description', 'start_date', 'end_date',
-              'sprint_duration', 'workload_unit', 'capacity']
+              'sprint_duration', 'workload_unit']
     template_name = 'blog/project_form.html'
 
     def get_initial(self):
@@ -304,7 +310,7 @@ class ProjectCreateView(AdminRequiredMixin, CreateView):
 class ProjectUpdateView(AdminRequiredMixin, UpdateView):
     model = Project
     fields = ['code', 'name', 'description', 'start_date', 'end_date',
-              'sprint_duration', 'workload_unit', 'capacity']
+              'sprint_duration', 'workload_unit']
     template_name = 'blog/project_form.html'
 
 
@@ -437,12 +443,32 @@ def sprint_start(request, pk):
 def sprint_close(request, pk):
     sprint = get_object_or_404(Sprint, pk=pk)
     role = get_user_role(request.user, sprint.project)
-    if (request.user.is_staff or role == 'contributor') and sprint.status == 'active':
-        sprint.status = 'completed'
-        sprint.save()
-        # Passer les tickets non-terminés en "closed" (ils restent dans le sprint)
-        Ticket.objects.filter(sprint=sprint).exclude(status='closed').update(status='closed')
-        messages.success(request, f'Sprint "{sprint.name}" terminé. Tous les tickets sont maintenant closed.')
+
+    if not (request.user.is_staff or role == 'contributor'):
+        messages.error(request, "You don't have permission to close this sprint.")
+        return redirect('project-detail', pk=sprint.project.pk)
+
+    if sprint.status != 'active':
+        messages.warning(request, "This sprint is not active.")
+        return redirect('project-detail', pk=sprint.project.pk)
+
+    action = request.GET.get('action', 'close_all')
+    target_id = request.GET.get('target')
+
+    non_closed = sprint.tickets.exclude(status='closed')
+
+    if action == 'move' and target_id:
+        target_sprint = get_object_or_404(Sprint, pk=target_id, project=sprint.project)
+        non_closed.update(sprint=target_sprint)
+        messages.success(request, f'Sprint "{sprint.name}" closed — {non_closed.count()} ticket(s) moved to "{target_sprint.name}".')
+    else:
+        count = non_closed.count()
+        non_closed.update(status='closed')
+        messages.success(request, f'Sprint "{sprint.name}" closed — {count} ticket(s) marked as closed.')
+
+    sprint.status = 'completed'
+    sprint.save()
+
     return redirect('project-detail', pk=sprint.project.pk)
 
 
@@ -508,3 +534,99 @@ class EpicDeleteView(AdminRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy('project-detail', kwargs={'pk': self.get_object().project.pk})
+    
+# ---------- Annonces  ------------------------------------
+
+@login_required
+def announcement_create(request, project_pk):
+    project = get_object_or_404(Project, pk=project_pk)
+ 
+    # Seul un admin/staff peut créer une annonce
+    if not request.user.is_staff:
+        messages.error(request, "Only admins can post announcements.")
+        return redirect('project-detail', pk=project_pk)
+ 
+    if request.method == 'POST':
+        message    = request.POST.get('message', '').strip()
+        type_      = request.POST.get('type', 'info')
+        expires_at = request.POST.get('expires_at') or None
+ 
+        if message:
+            Announcement.objects.create(
+                project=project,
+                message=message,
+                type=type_,
+                created_by=request.user,
+                expires_at=expires_at,
+            )
+            messages.success(request, "Announcement posted.")
+ 
+    return redirect('project-detail', pk=project_pk)
+ 
+ 
+@login_required
+def announcement_delete(request, pk):
+    from .models import Announcement
+    announcement = get_object_or_404(Announcement, pk=pk)
+ 
+    if not request.user.is_staff:
+        messages.error(request, "Only admins can delete announcements.")
+        return redirect('project-detail', pk=announcement.project.pk)
+ 
+    project_pk = announcement.project.pk
+    announcement.delete()
+    messages.success(request, "Announcement deleted.")
+    return redirect('project-detail', pk=project_pk)
+
+@login_required
+def manage_sprint_members(request, sprint_pk):
+    sprint = get_object_or_404(Sprint, pk=sprint_pk)
+    project = sprint.project
+    
+
+    role = get_user_role(request.user, project)
+    if not (request.user.is_staff or role == 'contributor'):
+        messages.error(request, "Accès refusé.")
+        return redirect('project-detail', pk=project.pk)
+
+    
+    project_members = project.memberships.select_related('user')
+    sprint_members = sprint.sprint_members.all()
+    
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        capacity = request.POST.get('capacity', 0)
+        action = request.POST.get('action')
+
+        if action == 'add_or_update':
+            member_user = get_object_or_404(User, pk=user_id)
+            
+           
+            raw_capacity = request.POST.get('capacity')
+            if not raw_capacity or raw_capacity.strip() == "":
+                capacity = 0
+            else:
+                try:
+                    capacity = int(raw_capacity)
+                except ValueError:
+                    capacity = 0
+            
+
+            SprintMember.objects.update_or_create(
+                sprint=sprint, 
+                user=member_user,
+                defaults={'individual_capacity': capacity}
+            )
+            messages.success(request, f"Capacity updated for {member_user.username}")
+        
+        elif action == 'remove':
+            SprintMember.objects.filter(sprint=sprint, user_id=user_id).delete()
+            messages.success(request, "Membre retiré du sprint")
+
+        return redirect('manage-sprint-members', sprint_pk=sprint.pk)
+
+    return render(request, 'blog/manage_sprint_members.html', {
+        'sprint': sprint,
+        'project_members': project_members,
+        'sprint_members': sprint_members,
+    })
