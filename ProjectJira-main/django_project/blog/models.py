@@ -224,6 +224,8 @@ class Announcement(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='announcements')
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateField(null=True, blank=True, verbose_name="Expires on")
+    
+
  
     class Meta:
         ordering = ['-created_at']

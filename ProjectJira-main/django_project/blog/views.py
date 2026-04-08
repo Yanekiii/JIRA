@@ -518,7 +518,6 @@ class EpicDeleteView(AdminRequiredMixin, DeleteView):
 def announcement_create(request, project_pk):
     project = get_object_or_404(Project, pk=project_pk)
  
-    # Seul un admin/staff peut créer une annonce
     if not request.user.is_staff:
         messages.error(request, "Only admins can post announcements.")
         return redirect('project-detail', pk=project_pk)
