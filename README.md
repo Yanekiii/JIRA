@@ -92,12 +92,13 @@ Puis :
 
 from django.contrib.auth.models import User
 
-u = User.objects.get(username=“eloise”) u.set_password(“1234”) u.save()
+u = User.objects.get(username="eloise")
+u.set_password("1234")
+u.save()
 
-u = User.objects.get(username=“gregory”) u.set_password(“1234”) u.save()
-
-Quitter avec :
-
+u = User.objects.get(username="gregory")
+u.set_password("1234")
+u.save()
 exit()
 
 ------------------------------------------------------------------------
