@@ -3,9 +3,12 @@ __pycache__/
 *.py[cod]
 *.sqlite3
 
+
 # Django
 db.sqlite3
-media/
+media/*
+!media/default.jpg
+!media/logo_client.png
 
 # VSCode
 .vscode/
